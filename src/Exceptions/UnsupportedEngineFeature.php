@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder\Exceptions;
 
-class UnsupportedEngineFeature extends InvalidQuery
+final class UnsupportedEngineFeature extends InvalidQuery
 {
     /**
      * @param  list<string>  $supportedDrivers

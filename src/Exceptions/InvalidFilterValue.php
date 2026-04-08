@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder\Exceptions;
 
-class InvalidFilterValue extends InvalidQuery
+final class InvalidFilterValue extends InvalidQuery
 {
     public static function invalidOperator(string $token): static
     {

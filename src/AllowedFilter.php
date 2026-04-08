@@ -110,7 +110,6 @@ class AllowedFilter
             return $this->arrayValueDelimiter;
         }
 
-        // @phpstan-ignore-next-line
         return (string) Config::get('scout-builder.delimiter', ',');
     }
 

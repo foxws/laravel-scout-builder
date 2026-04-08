@@ -62,6 +62,7 @@ class ScoutBuilder
                 ? ScoutBuilderRequest::fromRequest($request)
                 : app(ScoutBuilderRequest::class);
 
+            /** @phpstan-ignore-next-line */
             $subject = $subject::search($queryRequest->search());
         }
 

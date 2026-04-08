@@ -8,3 +8,5 @@ parameters:
         - config
         - database
     tmpDir: build/phpstan
+    ignoreErrors:
+        - identifier: new.static

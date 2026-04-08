@@ -6,7 +6,7 @@ namespace Foxws\ScoutBuilder\Exceptions;
 
 use Illuminate\Support\Collection;
 
-class InvalidFilterQuery extends InvalidQuery
+final class InvalidFilterQuery extends InvalidQuery
 {
     public function __construct(
         public Collection $unknownFilters,

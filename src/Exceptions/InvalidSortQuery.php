@@ -6,7 +6,7 @@ namespace Foxws\ScoutBuilder\Exceptions;
 
 use Illuminate\Support\Collection;
 
-class InvalidSortQuery extends InvalidQuery
+final class InvalidSortQuery extends InvalidQuery
 {
     public function __construct(
         public Collection $unknownSorts,
