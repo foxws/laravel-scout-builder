@@ -82,7 +82,7 @@ class ScoutBuilder
         return $result;
     }
 
-    public function clone(): static
+    public function cloneBuilder(): static
     {
         return clone $this;
     }

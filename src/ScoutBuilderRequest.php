@@ -71,7 +71,7 @@ class ScoutBuilderRequest extends Request
 
     protected function getFilterValue(mixed $value): mixed
     {
-        if (empty($value)) {
+        if ($value === null || $value === '') {
             return $value;
         }
 

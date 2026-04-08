@@ -194,9 +194,18 @@ class AllowedFilter
     protected function resolveValueForFiltering(mixed $value): mixed
     {
         if (is_array($value)) {
-            $remainingProperties = array_map([$this, 'resolveValueForFiltering'], $value);
+            $remainingProperties = array_filter(
+                array_map([$this, 'resolveValueForFiltering'], $value),
+                static fn (mixed $property): bool => $property !== null,
+            );
 
-            return filled($remainingProperties) ? $remainingProperties : null;
+            if ($remainingProperties === []) {
+                return null;
+            }
+
+            return array_is_list($value)
+                ? array_values($remainingProperties)
+                : $remainingProperties;
         }
 
         return ! $this->ignored->contains($value) ? $value : null;
