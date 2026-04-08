@@ -26,7 +26,7 @@ composer require foxws/laravel-scout-builder
 Publish the config file (optional):
 
 ```bash
-php artisan vendor:publish --tag="laravel-scout-builder-config"
+php artisan vendor:publish --tag="scout-builder-config"
 ```
 
 ## Quick Start
