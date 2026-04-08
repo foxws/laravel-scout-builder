@@ -6,7 +6,6 @@ namespace Foxws\ScoutBuilder\Filters;
 
 use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Enums\FilterOperator;
-use Foxws\ScoutBuilder\Enums\ScoutDriver;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Support\EngineAwareness;
 use Laravel\Scout\Builder;
@@ -17,7 +16,7 @@ class FiltersOperator implements Filter
 
     public function __invoke(Builder $query, mixed $value, string $property): void
     {
-        EngineAwareness::ensureFeatureSupport(EngineFeature::OperatorFilter, ScoutDriver::cases());
+        EngineAwareness::ensureFeatureSupport(EngineFeature::OperatorFilter);
 
         [$operator, $operand] = $this->resolveOperatorAndOperand($value);
 
