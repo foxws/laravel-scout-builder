@@ -2,9 +2,9 @@
 
 namespace Foxws\ScoutBuilder;
 
+use Foxws\ScoutBuilder\Commands\ScoutBuilderCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Foxws\ScoutBuilder\Commands\ScoutBuilderCommand;
 
 class ScoutBuilderServiceProvider extends PackageServiceProvider
 {
