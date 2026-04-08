@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder;
 
-use Foxws\ScoutBuilder\ScoutBuilderRequest;
 use Illuminate\Http\Request;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
