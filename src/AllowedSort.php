@@ -7,6 +7,8 @@ namespace Foxws\ScoutBuilder;
 use Foxws\ScoutBuilder\Sorts\Sort;
 use Foxws\ScoutBuilder\Sorts\SortsCallback;
 use Foxws\ScoutBuilder\Sorts\SortsField;
+use Foxws\ScoutBuilder\Sorts\SortsLatest;
+use Foxws\ScoutBuilder\Sorts\SortsOldest;
 
 class AllowedSort
 {
@@ -37,6 +39,16 @@ class AllowedSort
     public static function custom(string $name, Sort $sortClass, ?string $internalName = null): static
     {
         return new static($name, $sortClass, $internalName);
+    }
+
+    public static function latest(string $name = 'latest', ?string $column = null): static
+    {
+        return new static($name, new SortsLatest($column), $column ?? $name);
+    }
+
+    public static function oldest(string $name = 'oldest', ?string $column = null): static
+    {
+        return new static($name, new SortsOldest($column), $column ?? $name);
     }
 
     public function sort(QueryBuilder $query, ?bool $descending = null): void

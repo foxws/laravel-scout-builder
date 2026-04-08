@@ -2,8 +2,11 @@
 
 use Foxws\ScoutBuilder\AllowedFilter;
 use Foxws\ScoutBuilder\AllowedSort;
+use Foxws\ScoutBuilder\Enums\FilterOperator;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterQuery;
+use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Exceptions\InvalidSortQuery;
+use Foxws\ScoutBuilder\Exceptions\UnsupportedEngineFeature;
 use Foxws\ScoutBuilder\QueryBuilder;
 use Foxws\ScoutBuilder\QueryBuilderRequest;
 use Foxws\ScoutBuilder\Tests\Fakes\SearchablePost;
@@ -176,3 +179,84 @@ it('throws an exception for disallowed sorts', function () {
         'sort' => '-created_at,score',
     ]))->allowedSorts('created_at');
 })->throws(InvalidSortQuery::class);
+
+it('supports fixed and dynamic operator filters', function () {
+    $queryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'rating' => 4,
+            'price' => 'gte:120',
+        ],
+    ]));
+
+    $queryBuilder->allowedFilters(
+        AllowedFilter::operator('rating', FilterOperator::GreaterThan),
+        AllowedFilter::dynamicOperator('price')
+    );
+
+    expect($queryBuilder->getScoutBuilder()->wheres)
+        ->toContainEqual([
+            'field' => 'rating',
+            'operator' => '>',
+            'value' => 4,
+        ])
+        ->toContainEqual([
+            'field' => 'price',
+            'operator' => '>=',
+            'value' => '120',
+        ]);
+});
+
+it('throws when a dynamic operator token is invalid', function () {
+    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'price' => 'between:10',
+        ],
+    ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
+})->throws(InvalidFilterValue::class);
+
+it('supports latest and oldest custom sort strategies', function () {
+    $latestQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'sort' => 'recent',
+    ]));
+
+    $latestQueryBuilder->allowedSorts(AllowedSort::latest('recent', 'published_at'));
+
+    expect($latestQueryBuilder->getScoutBuilder()->orders)
+        ->toBe([
+            [
+                'column' => 'published_at',
+                'direction' => 'desc',
+            ],
+        ]);
+
+    $oldestQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'sort' => '-chronological',
+    ]));
+
+    $oldestQueryBuilder->allowedSorts(AllowedSort::oldest('chronological', 'published_at'));
+
+    expect($oldestQueryBuilder->getScoutBuilder()->orders)
+        ->toBe([
+            [
+                'column' => 'published_at',
+                'direction' => 'desc',
+            ],
+        ]);
+});
+
+it('enforces engine-awareness toggles when enabled', function () {
+    config()->set('scout-builder.engine_awareness.enforce_support', true);
+    config()->set('scout.driver', 'typesense');
+    config()->set('scout-builder.engine_awareness.operator_filter_drivers', ['database']);
+
+    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'price' => 'gt:100',
+        ],
+    ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
+})->throws(UnsupportedEngineFeature::class);

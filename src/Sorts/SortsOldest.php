@@ -7,8 +7,10 @@ namespace Foxws\ScoutBuilder\Sorts;
 use Foxws\ScoutBuilder\Support\EngineAwareness;
 use Laravel\Scout\Builder;
 
-class SortsField implements Sort
+class SortsOldest implements Sort
 {
+    public function __construct(protected ?string $column = null) {}
+
     public function __invoke(Builder $query, bool $descending, string $property): void
     {
         EngineAwareness::ensureFeatureSupport('field_sort', [
@@ -22,6 +24,14 @@ class SortsField implements Sort
             'null',
         ]);
 
-        $query->orderBy($property, $descending ? 'desc' : 'asc');
+        $column = $this->column ?? $property;
+
+        if ($descending) {
+            $query->latest($column);
+
+            return;
+        }
+
+        $query->oldest($column);
     }
 }

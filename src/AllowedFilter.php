@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder;
 
+use Foxws\ScoutBuilder\Enums\FilterOperator;
 use Foxws\ScoutBuilder\Filters\Filter;
 use Foxws\ScoutBuilder\Filters\FiltersCallback;
 use Foxws\ScoutBuilder\Filters\FiltersExact;
 use Foxws\ScoutBuilder\Filters\FiltersIn;
 use Foxws\ScoutBuilder\Filters\FiltersNotIn;
+use Foxws\ScoutBuilder\Filters\FiltersOperator;
 use Foxws\ScoutBuilder\Filters\FiltersTrashed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -64,6 +66,16 @@ class AllowedFilter
     public static function custom(string $name, Filter $filterClass, ?string $internalName = null): static
     {
         return new static($name, $filterClass, $internalName);
+    }
+
+    public static function operator(string $name, FilterOperator $operator, ?string $internalName = null): static
+    {
+        return new static($name, new FiltersOperator($operator), $internalName);
+    }
+
+    public static function dynamicOperator(string $name, ?string $internalName = null): static
+    {
+        return new static($name, new FiltersOperator, $internalName);
     }
 
     public function filter(QueryBuilder $query, mixed $value): void
