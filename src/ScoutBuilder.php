@@ -38,6 +38,30 @@ class ScoutBuilder
             : app(ScoutBuilderRequest::class);
     }
 
+    /**
+     * Add an Eloquent query callback, chaining with any previously registered callback.
+     *
+     * Overrides Scout's default behaviour (which overwrites) so that both a
+     * controller-supplied `->query()` and an include's `->query()` are always
+     * executed, regardless of call order.
+     *
+     * @param  callable(\Illuminate\Database\Eloquent\Builder<TModel>): void  $callback
+     */
+    public function query(callable $callback): static
+    {
+        $existing = $this->subject->queryCallback;
+
+        $this->subject->query(function ($builder) use ($existing, $callback): void {
+            if ($existing !== null) {
+                ($existing)($builder);
+            }
+
+            $callback($builder);
+        });
+
+        return $this;
+    }
+
     public function getScoutBuilder(): Builder
     {
         return $this->subject;
