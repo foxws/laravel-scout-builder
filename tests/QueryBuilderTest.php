@@ -5,7 +5,6 @@ use Foxws\ScoutBuilder\AllowedInclude;
 use Foxws\ScoutBuilder\AllowedSort;
 use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Enums\FilterOperator;
-use Foxws\ScoutBuilder\Enums\ScoutDriver;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterQuery;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Exceptions\InvalidIncludeQuery;
@@ -308,9 +307,9 @@ it('enforces engine-awareness toggles when enabled', function () {
 
 it('accepts enum-based feature and driver support checks', function () {
     config()->set('scout-builder.engine_awareness.enforce_support', true);
-    config()->set('scout.driver', ScoutDriver::Database->value);
+    config()->set('scout.driver', 'database');
 
-    EngineAwareness::ensureFeatureSupport(EngineFeature::FieldSort, ScoutDriver::cases());
+    EngineAwareness::ensureFeatureSupport(EngineFeature::FieldSort);
 
     expect(true)->toBeTrue();
 });

@@ -137,8 +137,8 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [francoism90](https://github.com/foxws)
 - [Spatie](https://spatie.be) and [all spatie/laravel-query-builder contributors](https://github.com/spatie/laravel-query-builder/graphs/contributors) — this package is built on their work
+- [francoism90](https://github.com/foxws)
 - [All Contributors](../../contributors)
 
 ## License
