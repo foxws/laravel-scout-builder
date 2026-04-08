@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Foxws\ScoutBuilder\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ScoutBuilderCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-scout-builder';
 
     public $description = 'My command';
 
