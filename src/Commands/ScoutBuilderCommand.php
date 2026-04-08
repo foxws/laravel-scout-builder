@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Foxws\ScoutBuilder\Commands;
 
 use Illuminate\Console\Command;
