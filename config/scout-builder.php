@@ -22,6 +22,20 @@ return [
     'delimiter' => ',',
 
     /*
+     * Pagination settings for the `jsonPaginate()` method.
+     *
+     * These follow the JSON:API spec, using `page[number]` and `page[size]`
+     * query parameters (e.g. `?page[number]=2&page[size]=15`).
+     */
+    'pagination' => [
+        'pagination_parameter' => 'page',
+        'number_parameter' => 'number',
+        'size_parameter' => 'size',
+        'default_size' => 30,
+        'max_size' => 30,
+    ],
+
+    /*
      * By default the package will throw an `InvalidFilterQuery` exception when a filter in the
      * URL is not allowed in the `allowedFilters()` method.
      */

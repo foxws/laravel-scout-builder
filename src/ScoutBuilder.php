@@ -9,6 +9,7 @@ use Foxws\ScoutBuilder\Concerns\IncludesQuery;
 use Foxws\ScoutBuilder\Concerns\SortsQuery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\ForwardsCalls;
 use Laravel\Scout\Builder;
 
@@ -70,6 +71,40 @@ class ScoutBuilder
         $scoutBuilder = new static($subject, $request);
 
         return $scoutBuilder;
+    }
+
+    public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->subject->paginate(
+            $this->getPaginationSize($maxResults, $defaultSize),
+            $this->getPaginationPageName(),
+            $this->request->pageNumber(),
+        );
+    }
+
+    public function jsonSimplePaginate(?int $maxResults = null, ?int $defaultSize = null): \Illuminate\Contracts\Pagination\Paginator
+    {
+        return $this->subject->simplePaginate(
+            $this->getPaginationSize($maxResults, $defaultSize),
+            $this->getPaginationPageName(),
+            $this->request->pageNumber(),
+        );
+    }
+
+    protected function getPaginationSize(?int $maxResults, ?int $defaultSize): int
+    {
+        $maxResults ??= (int) Config::get('scout-builder.pagination.max_size', 30);
+        $defaultSize ??= (int) Config::get('scout-builder.pagination.default_size', 30);
+
+        return min($this->request->pageSize() ?: $defaultSize, $maxResults);
+    }
+
+    protected function getPaginationPageName(): string
+    {
+        $paginationParameter = (string) Config::get('scout-builder.pagination.pagination_parameter', 'page');
+        $numberParameter = (string) Config::get('scout-builder.pagination.number_parameter', 'number');
+
+        return "{$paginationParameter}[{$numberParameter}]";
     }
 
     public function __call(string $name, array $arguments): mixed

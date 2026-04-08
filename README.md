@@ -14,6 +14,7 @@ A [Laravel Scout](https://laravel.com/docs/scout) query builder inspired by and 
 - [Filters](docs/filters.md)
 - [Sorts](docs/sorts.md)
 - [Includes](docs/includes.md)
+- [Pagination](docs/pagination.md)
 - [Engine Awareness](docs/engine-awareness.md)
 - [Configuration](docs/configuration.md)
 
@@ -61,6 +62,25 @@ This reads directly from the incoming `$request`:
 | Multi-value filter | `?filter[tags]=php,laravel` |
 | Operator filter | `?filter[price]=gte:100` |
 | Sort | `?sort=-recent,title` |
+| Paginate | `?page[number]=2&page[size]=15` |
+
+## Pagination
+
+Use `jsonPaginate()` instead of `get()` to return a paginated result following the JSON:API `page[number]` / `page[size]` convention:
+
+```php
+$results = ScoutBuilder::for(Post::class, $request)
+    ->allowedFilters(AllowedFilter::exact('status'))
+    ->allowedSorts(AllowedSort::field('title'))
+    ->jsonPaginate();
+```
+
+| Parameter | Example | Default |
+|---|---|---|
+| Page number | `?page[number]=2` | `1` |
+| Page size | `?page[size]=15` | `30` |
+
+The max page size is capped at `30` by default. Both defaults are configurable — see [Pagination](docs/pagination.md).
 
 ## Wrapping an Existing Scout Builder
 
@@ -93,6 +113,7 @@ $results = ScoutBuilder::for(Post::class, $request)
 | `AllowedFilter::dynamicOperator()` | — | ✅ colon-token + array payload |
 | `AllowedFilter::notIn()` | — | ✅ |
 | `AllowedSort::latest()` / `oldest()` | — | ✅ |
+| `jsonPaginate()` | ✅ (Eloquent only) | ✅ JSON:API `page[number]`/`page[size]` |
 | Engine awareness | — | ✅ `ScoutDriver` + `EngineFeature` enums |
 | Request scalar casting | raw strings | ✅ auto-casts `'true'`, `'42'`, `'null'`, etc. |
 

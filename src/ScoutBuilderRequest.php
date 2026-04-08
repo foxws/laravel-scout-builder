@@ -112,6 +112,26 @@ class ScoutBuilderRequest extends Request
         return $value;
     }
 
+    public function pageSize(): int
+    {
+        $paginationParameter = (string) Config::get('scout-builder.pagination.pagination_parameter', 'page');
+        $sizeParameter = (string) Config::get('scout-builder.pagination.size_parameter', 'size');
+        $defaultSize = (int) Config::get('scout-builder.pagination.default_size', 30);
+        $maxSize = (int) Config::get('scout-builder.pagination.max_size', 30);
+
+        $size = (int) $this->input("{$paginationParameter}.{$sizeParameter}", $defaultSize);
+
+        return min($size, $maxSize);
+    }
+
+    public function pageNumber(): int
+    {
+        $paginationParameter = (string) Config::get('scout-builder.pagination.pagination_parameter', 'page');
+        $numberParameter = (string) Config::get('scout-builder.pagination.number_parameter', 'number');
+
+        return max(1, (int) $this->input("{$paginationParameter}.{$numberParameter}", 1));
+    }
+
     protected function getRequestData(?string $key = null, mixed $default = null): mixed
     {
         return $this->input($key, $default);
