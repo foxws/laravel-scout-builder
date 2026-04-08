@@ -10,12 +10,12 @@ use Foxws\ScoutBuilder\Concerns\SortsQuery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Traits\ForwardsCalls;
-use Laravel\Scout\Builder as LaravelScoutBuilder;
+use Laravel\Scout\Builder;
 
 /**
  * @template TModel of Model
  *
- * @mixin LaravelScoutBuilder<TModel>
+ * @mixin Builder<TModel>
  */
 class ScoutBuilder
 {
@@ -27,7 +27,7 @@ class ScoutBuilder
     protected ScoutBuilderRequest $request;
 
     public function __construct(
-        protected LaravelScoutBuilder $subject,
+        protected Builder $subject,
         ?Request $request = null,
     ) {
         $this->request = $request
@@ -35,12 +35,12 @@ class ScoutBuilder
             : app(ScoutBuilderRequest::class);
     }
 
-    public function getScoutBuilder(): LaravelScoutBuilder
+    public function getScoutBuilder(): Builder
     {
         return $this->subject;
     }
 
-    public function getSubject(): LaravelScoutBuilder
+    public function getSubject(): Builder
     {
         return $this->subject;
     }
@@ -48,10 +48,10 @@ class ScoutBuilder
     /**
      * @template T of Model
      *
-     * @param  LaravelScoutBuilder<T>|T|class-string<T>  $subject
+     * @param  Builder<T>|T|class-string<T>  $subject
      * @return static<T>
      */
-    public static function for(LaravelScoutBuilder|Model|string $subject, ?Request $request = null): static
+    public static function for(Builder|Model|string $subject, ?Request $request = null): static
     {
         if (is_string($subject) && is_subclass_of($subject, Model::class)) {
             $subject = new $subject;
