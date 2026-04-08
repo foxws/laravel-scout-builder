@@ -11,6 +11,7 @@ use Foxws\ScoutBuilder\Filters\FiltersExact;
 use Foxws\ScoutBuilder\Filters\FiltersIn;
 use Foxws\ScoutBuilder\Filters\FiltersNotIn;
 use Foxws\ScoutBuilder\Filters\FiltersOperator;
+use Foxws\ScoutBuilder\Filters\FiltersScope;
 use Foxws\ScoutBuilder\Filters\FiltersTrashed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -77,6 +78,11 @@ class AllowedFilter
     public static function dynamicOperator(string $name, ?string $internalName = null): static
     {
         return new static($name, new FiltersOperator, $internalName);
+    }
+
+    public static function scope(string $name, ?string $internalName = null): static
+    {
+        return new static($name, new FiltersScope, $internalName);
     }
 
     public function filter(ScoutBuilder $query, mixed $value): void

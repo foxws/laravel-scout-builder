@@ -311,3 +311,37 @@ it('accepts enum-based feature and driver support checks', function () {
 
     expect(true)->toBeTrue();
 });
+
+it('applies a scope filter via the scout query callback', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => ['published' => '1'],
+    ]));
+
+    $queryBuilder->allowedFilters(AllowedFilter::scope('published'));
+
+    expect($queryBuilder->getScoutBuilder()->queryCallback)->toBeCallable();
+});
+
+it('chains multiple scope filters without overwriting each other', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'published' => '1',
+            'of_category' => 'news',
+        ],
+    ]));
+
+    $queryBuilder->allowedFilters(
+        AllowedFilter::scope('published'),
+        AllowedFilter::scope('of_category'),
+    );
+
+    $eloquentBuilder = SearchablePost::query();
+
+    ($queryBuilder->getScoutBuilder()->queryCallback)($eloquentBuilder);
+
+    expect($eloquentBuilder->getQuery()->wheres)
+        ->toContainEqual(['type' => 'Basic', 'column' => 'is_published', 'operator' => '=', 'value' => true, 'boolean' => 'and'])
+        ->toContainEqual(['type' => 'Basic', 'column' => 'category', 'operator' => '=', 'value' => 'news', 'boolean' => 'and']);
+});
