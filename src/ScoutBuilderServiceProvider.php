@@ -13,13 +13,13 @@ class ScoutBuilderServiceProvider extends PackageServiceProvider
 {
     public function registeringPackage(): void
     {
-        $this->app->bind(QueryBuilderRequest::class, function (): QueryBuilderRequest {
+        $this->app->bind(ScoutBuilderRequest::class, function (): ScoutBuilderRequest {
             $request = $this->app->make(Request::class);
 
-            return QueryBuilderRequest::fromRequest($request);
+            return ScoutBuilderRequest::fromRequest($request);
         });
 
-        $this->app->singleton(ScoutBuilder::class, fn (): ScoutBuilder => new ScoutBuilder);
+        $this->app->singleton(ScoutBuilderFactory::class, fn (): ScoutBuilderFactory => new ScoutBuilderFactory);
     }
 
     public function configurePackage(Package $package): void

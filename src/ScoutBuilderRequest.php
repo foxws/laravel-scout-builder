@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
-class QueryBuilderRequest extends Request
+class ScoutBuilderRequest extends Request
 {
     public static function fromRequest(Request $request): static
     {
@@ -17,14 +17,14 @@ class QueryBuilderRequest extends Request
 
     public function search(): string
     {
-        $queryParameterName = Config::string('scout-builder.parameters.query', 'query');
+        $queryParameterName = (string) Config::get('scout-builder.parameters.query', 'query');
 
-        return (string) $this->getRequestData($queryParameterName, '');
+        return trim((string) $this->getRequestData($queryParameterName, ''));
     }
 
     public function sorts(): Collection
     {
-        $sortParameterName = Config::string('scout-builder.parameters.sort', 'sort');
+        $sortParameterName = (string) Config::get('scout-builder.parameters.sort', 'sort');
 
         $sortParts = $this->getRequestData($sortParameterName);
 
@@ -32,12 +32,14 @@ class QueryBuilderRequest extends Request
             $sortParts = explode($this->delimiter(), $sortParts);
         }
 
-        return collect($sortParts)->filter();
+        return collect($sortParts)
+            ->map(fn (mixed $sort): mixed => is_string($sort) ? trim($sort) : $sort)
+            ->filter();
     }
 
     public function filters(): Collection
     {
-        $filterParameterName = Config::string('scout-builder.parameters.filter', 'filter');
+        $filterParameterName = (string) Config::get('scout-builder.parameters.filter', 'filter');
 
         $filterParts = $this->getRequestData($filterParameterName, []);
 
@@ -74,6 +76,24 @@ class QueryBuilderRequest extends Request
             return false;
         }
 
+        if ($value === 'null') {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $trimmedValue = trim($value);
+
+            if ($trimmedValue !== '' && preg_match('/^-?\d+$/', $trimmedValue) === 1) {
+                return (int) $trimmedValue;
+            }
+
+            if ($trimmedValue !== '' && preg_match('/^-?\d+\.\d+$/', $trimmedValue) === 1) {
+                return (float) $trimmedValue;
+            }
+
+            return $trimmedValue;
+        }
+
         return $value;
     }
 
@@ -84,6 +104,6 @@ class QueryBuilderRequest extends Request
 
     protected function delimiter(): string
     {
-        return Config::string('scout-builder.delimiter', ',');
+        return (string) Config::get('scout-builder.delimiter', ',');
     }
 }

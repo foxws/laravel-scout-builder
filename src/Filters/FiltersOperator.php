@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder\Filters;
 
+use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Enums\FilterOperator;
+use Foxws\ScoutBuilder\Enums\ScoutDriver;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Support\EngineAwareness;
 use Laravel\Scout\Builder;
@@ -15,16 +17,7 @@ class FiltersOperator implements Filter
 
     public function __invoke(Builder $query, mixed $value, string $property): void
     {
-        EngineAwareness::ensureFeatureSupport('operator_filter', [
-            'database',
-            'collection',
-            'algolia',
-            'algolia3',
-            'algolia4',
-            'meilisearch',
-            'typesense',
-            'null',
-        ]);
+        EngineAwareness::ensureFeatureSupport(EngineFeature::OperatorFilter, ScoutDriver::cases());
 
         [$operator, $operand] = $this->resolveOperatorAndOperand($value);
 
@@ -37,7 +30,25 @@ class FiltersOperator implements Filter
     protected function resolveOperatorAndOperand(mixed $value): array
     {
         if ($this->operator instanceof FilterOperator) {
+            if (is_array($value) && array_key_exists('value', $value)) {
+                return [$this->operator, $value['value']];
+            }
+
             return [$this->operator, $value];
+        }
+
+        if (is_array($value) && array_key_exists('operator', $value) && array_key_exists('value', $value)) {
+            $operator = FilterOperator::fromToken((string) $value['operator']);
+
+            if (! $operator instanceof FilterOperator) {
+                throw InvalidFilterValue::invalidOperator((string) $value['operator']);
+            }
+
+            return [$operator, $value['value']];
+        }
+
+        if (is_array($value)) {
+            throw InvalidFilterValue::invalidOperatorPayload();
         }
 
         if (! is_string($value) || ! str_contains($value, ':')) {

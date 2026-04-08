@@ -10,4 +10,9 @@ class InvalidFilterValue extends InvalidQuery
     {
         return new static("Filter operator `{$token}` is not supported. Allowed operator tokens are `eq`, `neq`, `lt`, `lte`, `gt`, and `gte`.");
     }
+
+    public static function invalidOperatorPayload(): static
+    {
+        return new static('Dynamic operator filters expect either a scalar value like `gte:10` or an array payload with `operator` and `value` keys.');
+    }
 }

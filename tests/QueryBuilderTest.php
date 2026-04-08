@@ -2,26 +2,29 @@
 
 use Foxws\ScoutBuilder\AllowedFilter;
 use Foxws\ScoutBuilder\AllowedSort;
+use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Enums\FilterOperator;
+use Foxws\ScoutBuilder\Enums\ScoutDriver;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterQuery;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Exceptions\InvalidSortQuery;
 use Foxws\ScoutBuilder\Exceptions\UnsupportedEngineFeature;
-use Foxws\ScoutBuilder\QueryBuilder;
-use Foxws\ScoutBuilder\QueryBuilderRequest;
+use Foxws\ScoutBuilder\ScoutBuilder;
+use Foxws\ScoutBuilder\ScoutBuilderRequest;
+use Foxws\ScoutBuilder\Support\EngineAwareness;
 use Foxws\ScoutBuilder\Tests\Fakes\SearchablePost;
 use Illuminate\Http\Request;
-use Laravel\Scout\Builder as ScoutBuilder;
+use Laravel\Scout\Builder;
 
 it('creates a scout builder from a model class and request query', function () {
     $request = Request::create('/', 'GET', [
         'query' => 'laravel',
     ]);
 
-    $queryBuilder = QueryBuilder::for(SearchablePost::class, $request);
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, $request);
 
     expect($queryBuilder->getScoutBuilder())
-        ->toBeInstanceOf(ScoutBuilder::class)
+        ->toBeInstanceOf(Builder::class)
         ->and($queryBuilder->getScoutBuilder()->model)
         ->toBeInstanceOf(SearchablePost::class)
         ->and($queryBuilder->getScoutBuilder()->query)
@@ -29,7 +32,7 @@ it('creates a scout builder from a model class and request query', function () {
 });
 
 it('keeps fluent chaining when forwarding scout builder calls', function () {
-    $queryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
     ]));
 
@@ -39,7 +42,7 @@ it('keeps fluent chaining when forwarding scout builder calls', function () {
         ->take(10);
 
     expect($result)
-        ->toBeInstanceOf(QueryBuilder::class)
+        ->toBeInstanceOf(ScoutBuilder::class)
         ->and($result->getScoutBuilder()->wheres)
         ->toContainEqual([
             'field' => 'is_published',
@@ -58,33 +61,42 @@ it('keeps fluent chaining when forwarding scout builder calls', function () {
 it('supports wrapping an existing scout builder', function () {
     $scoutBuilder = SearchablePost::search('spatie');
 
-    $queryBuilder = QueryBuilder::for($scoutBuilder);
+    $queryBuilder = ScoutBuilder::for($scoutBuilder);
 
     expect($queryBuilder->getScoutBuilder())->toBe($scoutBuilder);
 });
 
 it('parses sorts and typed filters from the request', function () {
-    $request = QueryBuilderRequest::fromRequest(Request::create('/', 'GET', [
-        'sort' => '-created_at,title',
+    $request = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'query' => '  laravel scout  ',
+        'sort' => ' -created_at, title ',
         'filter' => [
             'is_published' => 'true',
             'featured' => 'false',
             'category' => 'news',
+            'price' => '12.5',
+            'total' => '42',
+            'deleted_at' => 'null',
         ],
     ]));
 
-    expect($request->sorts()->values()->all())
+    expect($request->search())
+        ->toBe('laravel scout')
+        ->and($request->sorts()->values()->all())
         ->toBe(['-created_at', 'title'])
         ->and($request->filters()->all())
         ->toBe([
             'is_published' => true,
             'featured' => false,
             'category' => 'news',
+            'price' => 12.5,
+            'total' => 42,
+            'deleted_at' => null,
         ]);
 });
 
 it('applies allowed filters to scout where and whereIn clauses', function () {
-    $queryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
             'status' => 'published',
@@ -110,7 +122,7 @@ it('applies allowed filters to scout where and whereIn clauses', function () {
 });
 
 it('applies default filters when request filters are absent', function () {
-    $queryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
     ]));
 
@@ -127,7 +139,7 @@ it('applies default filters when request filters are absent', function () {
 });
 
 it('applies allowed sorts and default sorts to scout orders', function () {
-    $requestedSortQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $requestedSortQueryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'sort' => '-created_at,title',
     ]));
@@ -146,7 +158,7 @@ it('applies allowed sorts and default sorts to scout orders', function () {
             ],
         ]);
 
-    $defaultSortQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $defaultSortQueryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
     ]));
 
@@ -164,7 +176,7 @@ it('applies allowed sorts and default sorts to scout orders', function () {
 });
 
 it('throws an exception for disallowed filters', function () {
-    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
             'status' => 'published',
@@ -174,14 +186,14 @@ it('throws an exception for disallowed filters', function () {
 })->throws(InvalidFilterQuery::class);
 
 it('throws an exception for disallowed sorts', function () {
-    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'sort' => '-created_at,score',
     ]))->allowedSorts('created_at');
 })->throws(InvalidSortQuery::class);
 
 it('supports fixed and dynamic operator filters', function () {
-    $queryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
             'rating' => 4,
@@ -207,8 +219,29 @@ it('supports fixed and dynamic operator filters', function () {
         ]);
 });
 
+it('supports dynamic operator filters with array payloads', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'price' => [
+                'operator' => 'gte',
+                'value' => '120',
+            ],
+        ],
+    ]));
+
+    $queryBuilder->allowedFilters(AllowedFilter::dynamicOperator('price'));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)
+        ->toContainEqual([
+            'field' => 'price',
+            'operator' => '>=',
+            'value' => 120,
+        ]);
+});
+
 it('throws when a dynamic operator token is invalid', function () {
-    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
             'price' => 'between:10',
@@ -216,8 +249,17 @@ it('throws when a dynamic operator token is invalid', function () {
     ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
 })->throws(InvalidFilterValue::class);
 
+it('throws when a dynamic operator payload array is malformed', function () {
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'price' => [120, 140],
+        ],
+    ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
+})->throws(InvalidFilterValue::class);
+
 it('supports latest and oldest custom sort strategies', function () {
-    $latestQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $latestQueryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'sort' => 'recent',
     ]));
@@ -232,7 +274,7 @@ it('supports latest and oldest custom sort strategies', function () {
             ],
         ]);
 
-    $oldestQueryBuilder = QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    $oldestQueryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'sort' => '-chronological',
     ]));
@@ -253,10 +295,19 @@ it('enforces engine-awareness toggles when enabled', function () {
     config()->set('scout.driver', 'typesense');
     config()->set('scout-builder.engine_awareness.operator_filter_drivers', ['database']);
 
-    QueryBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
             'price' => 'gt:100',
         ],
     ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
 })->throws(UnsupportedEngineFeature::class);
+
+it('accepts enum-based feature and driver support checks', function () {
+    config()->set('scout-builder.engine_awareness.enforce_support', true);
+    config()->set('scout.driver', ScoutDriver::Database->value);
+
+    EngineAwareness::ensureFeatureSupport(EngineFeature::FieldSort, ScoutDriver::cases());
+
+    expect(true)->toBeTrue();
+});

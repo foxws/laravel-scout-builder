@@ -51,7 +51,7 @@ class AllowedSort
         return new static($name, new SortsOldest($column), $column ?? $name);
     }
 
-    public function sort(QueryBuilder $query, ?bool $descending = null): void
+    public function sort(ScoutBuilder $query, ?bool $descending = null): void
     {
         $descending = $descending ?? $this->defaultDescending;
 

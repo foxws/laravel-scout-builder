@@ -13,6 +13,7 @@ use Foxws\ScoutBuilder\Filters\FiltersNotIn;
 use Foxws\ScoutBuilder\Filters\FiltersOperator;
 use Foxws\ScoutBuilder\Filters\FiltersTrashed;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 class AllowedFilter
@@ -78,7 +79,7 @@ class AllowedFilter
         return new static($name, new FiltersOperator, $internalName);
     }
 
-    public function filter(QueryBuilder $query, mixed $value): void
+    public function filter(ScoutBuilder $query, mixed $value): void
     {
         $value = $this->splitFilterValue($value);
         $valueToFilter = $this->resolveValueForFiltering($value);
@@ -99,7 +100,12 @@ class AllowedFilter
 
     public function getDelimiter(): string
     {
-        return $this->arrayValueDelimiter ?? config('scout-builder.delimiter', ',');
+        if (is_string($this->arrayValueDelimiter)) {
+            return $this->arrayValueDelimiter;
+        }
+
+        // @phpstan-ignore-next-line
+        return (string) Config::get('scout-builder.delimiter', ',');
     }
 
     public function getName(): string
@@ -182,10 +188,9 @@ class AllowedFilter
     protected function resolveValueForFiltering(mixed $value): mixed
     {
         if (is_array($value)) {
-            $remainingValues = array_map([$this, 'resolveValueForFiltering'], $value);
-            $remainingValues = array_filter($remainingValues, fn (mixed $remainingValue): bool => ! is_null($remainingValue));
+            $remainingProperties = array_map([$this, 'resolveValueForFiltering'], $value);
 
-            return $remainingValues !== [] ? array_values($remainingValues) : null;
+            return filled($remainingProperties) ? $remainingProperties : null;
         }
 
         return ! $this->ignored->contains($value) ? $value : null;
