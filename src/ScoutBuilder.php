@@ -7,6 +7,8 @@ namespace Foxws\ScoutBuilder;
 use Foxws\ScoutBuilder\Concerns\FiltersQuery;
 use Foxws\ScoutBuilder\Concerns\IncludesQuery;
 use Foxws\ScoutBuilder\Concerns\SortsQuery;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -73,7 +75,7 @@ class ScoutBuilder
         return $scoutBuilder;
     }
 
-    public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): LengthAwarePaginator
     {
         return $this->subject->paginate(
             $this->getPaginationSize($maxResults, $defaultSize),
@@ -82,7 +84,7 @@ class ScoutBuilder
         );
     }
 
-    public function jsonSimplePaginate(?int $maxResults = null, ?int $defaultSize = null): \Illuminate\Contracts\Pagination\Paginator
+    public function jsonSimplePaginate(?int $maxResults = null, ?int $defaultSize = null): Paginator
     {
         return $this->subject->simplePaginate(
             $this->getPaginationSize($maxResults, $defaultSize),
