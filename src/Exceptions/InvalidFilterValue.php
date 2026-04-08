@@ -8,7 +8,7 @@ final class InvalidFilterValue extends InvalidQuery
 {
     public static function invalidOperator(string $token): static
     {
-        return new static("Filter operator `{$token}` is not supported. Allowed operator tokens are `eq`, `neq`, `lt`, `lte`, `gt`, and `gte`.");
+        return new self("Filter operator `{$token}` is not supported. Allowed operator tokens are `eq`, `neq`, `lt`, `lte`, `gt`, and `gte`.");
     }
 
     public static function invalidOperatorPayload(): static

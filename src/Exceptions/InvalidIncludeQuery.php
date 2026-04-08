@@ -20,6 +20,6 @@ final class InvalidIncludeQuery extends InvalidQuery
 
     public static function includesNotAllowed(Collection $unknownIncludes, Collection $allowedIncludes): static
     {
-        return new static($unknownIncludes, $allowedIncludes);
+        return new self($unknownIncludes, $allowedIncludes);
     }
 }

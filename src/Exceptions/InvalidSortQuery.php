@@ -20,6 +20,6 @@ final class InvalidSortQuery extends InvalidQuery
 
     public static function sortsNotAllowed(Collection $unknownSorts, Collection $allowedSorts): static
     {
-        return new static($unknownSorts, $allowedSorts);
+        return new self($unknownSorts, $allowedSorts);
     }
 }

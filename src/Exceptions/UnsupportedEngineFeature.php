@@ -13,6 +13,6 @@ final class UnsupportedEngineFeature extends InvalidQuery
     {
         $supportedDriverList = implode(', ', $supportedDrivers);
 
-        return new static("Feature `{$feature}` is not configured for Scout driver `{$driver}`. Supported drivers: `{$supportedDriverList}`.");
+        return new self("Feature `{$feature}` is not configured for Scout driver `{$driver}`. Supported drivers: `{$supportedDriverList}`.");
     }
 }

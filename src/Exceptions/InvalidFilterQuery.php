@@ -20,6 +20,6 @@ final class InvalidFilterQuery extends InvalidQuery
 
     public static function filtersNotAllowed(Collection $unknownFilters, Collection $allowedFilters): static
     {
-        return new static($unknownFilters, $allowedFilters);
+        return new self($unknownFilters, $allowedFilters);
     }
 }
