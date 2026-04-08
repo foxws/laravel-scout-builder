@@ -60,7 +60,7 @@ return [
      * Set `enforce_support` to `true` to throw an exception when an unsupported driver is used.
      */
     'engine_awareness' => [
-        'enforce_support' => false,
+        'enforce_support' => env('APP_DEBUG', false),
 
         /*
          * Drivers that support AllowedFilter::operator() and AllowedFilter::dynamicOperator().
