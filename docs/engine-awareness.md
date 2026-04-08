@@ -6,12 +6,12 @@ Engine awareness lets you guard against using features your configured driver do
 
 ## Enabling Enforcement
 
-By default enforcement is **off**. Enable it in the config:
+By default enforcement is **on when `APP_DEBUG` is `true`**. Override it explicitly in the config:
 
 ```php
 // config/scout-builder.php
 'engine_awareness' => [
-    'enforce_support' => true,
+    'enforce_support' => env('APP_DEBUG', false),
     ...
 ],
 ```
@@ -28,10 +28,10 @@ When enforcement is enabled and a filter or sort is applied that the active driv
 
 Two features are guarded:
 
-| Config key | Applies to |
-|---|---|
-| `operator_filter_drivers` | `AllowedFilter::operator()` and `AllowedFilter::dynamicOperator()` |
-| `field_sort_drivers` | `AllowedSort::field()`, `AllowedSort::latest()`, `AllowedSort::oldest()` |
+| Config key                | Applies to                                                               |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `operator_filter_drivers` | `AllowedFilter::operator()` and `AllowedFilter::dynamicOperator()`       |
+| `field_sort_drivers`      | `AllowedSort::field()`, `AllowedSort::latest()`, `AllowedSort::oldest()` |
 
 By default all known drivers are in both lists. To restrict operator filters to only the database driver:
 
