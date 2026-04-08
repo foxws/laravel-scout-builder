@@ -5,12 +5,14 @@ return [
         'query' => 'query',
         'filter' => 'filter',
         'sort' => 'sort',
+        'include' => 'include',
     ],
 
     'delimiter' => ',',
 
     'disable_invalid_filter_query_exception' => false,
     'disable_invalid_sort_query_exception' => false,
+    'disable_invalid_include_query_exception' => false,
 
     'engine_awareness' => [
         'enforce_support' => false,

@@ -37,6 +37,21 @@ class ScoutBuilderRequest extends Request
             ->filter();
     }
 
+    public function includes(): Collection
+    {
+        $includeParameterName = (string) Config::get('scout-builder.parameters.include', 'include');
+
+        $includeParts = $this->getRequestData($includeParameterName);
+
+        if (is_string($includeParts)) {
+            $includeParts = explode($this->delimiter(), $includeParts);
+        }
+
+        return collect($includeParts)
+            ->map(fn (mixed $include): mixed => is_string($include) ? trim($include) : $include)
+            ->filter();
+    }
+
     public function filters(): Collection
     {
         $filterParameterName = (string) Config::get('scout-builder.parameters.filter', 'filter');

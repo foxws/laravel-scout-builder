@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Foxws\ScoutBuilder;
 
 use Foxws\ScoutBuilder\Concerns\FiltersQuery;
+use Foxws\ScoutBuilder\Concerns\IncludesQuery;
 use Foxws\ScoutBuilder\Concerns\SortsQuery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ class ScoutBuilder
 {
     use FiltersQuery;
     use ForwardsCalls;
+    use IncludesQuery;
     use SortsQuery;
 
     protected ScoutBuilderRequest $request;

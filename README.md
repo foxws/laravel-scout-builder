@@ -1,60 +1,100 @@
-# This is my package laravel-scout-builder
+# laravel-scout-builder
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/foxws/laravel-scout-builder.svg?style=flat-square)](https://packagist.org/packages/foxws/laravel-scout-builder)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/foxws/laravel-scout-builder/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/foxws/laravel-scout-builder/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/foxws/laravel-scout-builder/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/foxws/laravel-scout-builder/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/foxws/laravel-scout-builder.svg?style=flat-square)](https://packagist.org/packages/foxws/laravel-scout-builder)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A [Laravel Scout](https://laravel.com/docs/scout) query builder inspired by and largely derived from [spatie/laravel-query-builder](https://github.com/spatie/laravel-query-builder). It brings the same `AllowedFilter` / `AllowedSort` API to Scout's search builder, letting you expose safe, declarative search endpoints driven by HTTP query parameters.
 
-## Support us
+> **Credits** — This package is a close adaptation of spatie/laravel-query-builder. All credit for the original architecture, patterns, and API design belongs to [Spatie](https://spatie.be). If this package is useful to you, please consider [supporting Spatie](https://spatie.be/open-source/support-us).
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/laravel-scout-builder.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/laravel-scout-builder)
+## Documentation
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- [Filters](docs/filters.md)
+- [Sorts](docs/sorts.md)
+- [Includes](docs/includes.md)
+- [Engine Awareness](docs/engine-awareness.md)
+- [Configuration](docs/configuration.md)
 
 ## Installation
-
-You can install the package via composer:
 
 ```bash
 composer require foxws/laravel-scout-builder
 ```
 
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="laravel-scout-builder-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
+Publish the config file (optional):
 
 ```bash
 php artisan vendor:publish --tag="laravel-scout-builder-config"
 ```
 
-This is the contents of the published config file:
+## Quick Start
+
+Add the `Searchable` trait to your model as usual, then build a search endpoint:
 
 ```php
-return [
-];
+use Foxws\ScoutBuilder\AllowedFilter;
+use Foxws\ScoutBuilder\AllowedSort;
+use Foxws\ScoutBuilder\ScoutBuilder;
+
+$results = ScoutBuilder::for(Post::class, $request)
+    ->allowedFilters(
+        AllowedFilter::exact('status'),
+        AllowedFilter::in('tags'),
+        AllowedFilter::dynamicOperator('price'),
+    )
+    ->allowedSorts(
+        AllowedSort::latest('recent', 'published_at'),
+        AllowedSort::field('title'),
+    )
+    ->defaultSort('-recent')
+    ->get();
 ```
 
-Optionally, you can publish the views using
+This reads directly from the incoming `$request`:
 
-```bash
-php artisan vendor:publish --tag="laravel-scout-builder-views"
-```
+| Parameter | Example |
+|---|---|
+| Search query | `?query=laravel` |
+| Exact filter | `?filter[status]=published` |
+| Multi-value filter | `?filter[tags]=php,laravel` |
+| Operator filter | `?filter[price]=gte:100` |
+| Sort | `?sort=-recent,title` |
 
-## Usage
+## Wrapping an Existing Scout Builder
 
 ```php
-$scoutBuilder = new Foxws\ScoutBuilder();
-echo $scoutBuilder->echoPhrase('Hello, Foxws!');
+$builder = Post::search('laravel')->where('is_published', true);
+
+$results = ScoutBuilder::for($builder, $request)
+    ->allowedFilters(AllowedFilter::exact('status'))
+    ->get();
 ```
+
+## Facade
+
+```php
+use Foxws\ScoutBuilder\Facades\ScoutBuilder;
+
+$results = ScoutBuilder::for(Post::class, $request)
+    ->allowedFilters(AllowedFilter::scope('published'))
+    ->get();
+```
+
+## Differences from spatie/laravel-query-builder
+
+| Feature | spatie/laravel-query-builder | foxws/laravel-scout-builder |
+|---|---|---|
+| Underlying builder | Eloquent `Builder` | Scout `Builder` |
+| `AllowedInclude` | ✅ | ✅ via Scout `query()` callback (database/collection drivers) |
+| `FiltersPartial`, `FiltersBeginsWith`, etc. | ✅ | — (text search handled by Scout itself) |
+| `AllowedFilter::operator()` | via `FiltersOperator` | ✅ first-class with `FilterOperator` enum |
+| `AllowedFilter::dynamicOperator()` | — | ✅ colon-token + array payload |
+| `AllowedFilter::notIn()` | — | ✅ |
+| `AllowedSort::latest()` / `oldest()` | — | ✅ |
+| Engine awareness | — | ✅ `ScoutDriver` + `EngineFeature` enums |
+| Request scalar casting | raw strings | ✅ auto-casts `'true'`, `'42'`, `'null'`, etc. |
 
 ## Testing
 
@@ -77,6 +117,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 ## Credits
 
 - [francoism90](https://github.com/foxws)
+- [Spatie](https://spatie.be) and [all spatie/laravel-query-builder contributors](https://github.com/spatie/laravel-query-builder/graphs/contributors) — this package is built on their work
 - [All Contributors](../../contributors)
 
 ## License
