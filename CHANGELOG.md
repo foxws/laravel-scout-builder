@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 0.0.2 - 2026-04-09
+
+### What's Changed
+
+* fix: improve default sort fallback to handle unknown sorts by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/3
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/0.0.1...0.0.2
+
 ## 0.0.1 - 2026-04-08
 
 ### What's Changed
