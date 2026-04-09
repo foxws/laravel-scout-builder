@@ -292,6 +292,42 @@ it('supports latest and oldest custom sort strategies', function () {
         ]);
 });
 
+it('applies a custom sort strategy via defaultSort when no sort is requested', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+    ]));
+
+    $queryBuilder
+        ->allowedSorts(AllowedSort::latest('recent', 'published_at'))
+        ->defaultSort('recent');
+
+    expect($queryBuilder->getScoutBuilder()->orders)
+        ->toBe([
+            [
+                'column' => 'published_at',
+                'direction' => 'desc',
+            ],
+        ]);
+});
+
+it('preserves descending flag when defaultSort resolves a custom sort strategy', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+    ]));
+
+    $queryBuilder
+        ->allowedSorts(AllowedSort::latest('recent', 'published_at'))
+        ->defaultSort('-recent');
+
+    expect($queryBuilder->getScoutBuilder()->orders)
+        ->toBe([
+            [
+                'column' => 'published_at',
+                'direction' => 'asc',
+            ],
+        ]);
+});
+
 it('enforces engine-awareness toggles when enabled', function () {
     config()->set('scout-builder.engine_awareness.enforce_support', true);
     config()->set('scout.driver', 'typesense');
