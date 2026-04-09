@@ -14,7 +14,7 @@ trait SortsQuery
 
     public function allowedSorts(AllowedSort|string ...$sorts): static
     {
-        $this->allowedSorts = collect($sorts)->map(function (AllowedSort|string $sort): AllowedSort {
+        $this->allowedSorts = Collection::make($sorts)->map(function (AllowedSort|string $sort): AllowedSort {
             if ($sort instanceof AllowedSort) {
                 return $sort;
             }
@@ -39,16 +39,17 @@ trait SortsQuery
             return $this;
         }
 
-        collect($sorts)
-            ->map(function (AllowedSort|string $sort): AllowedSort {
+        Collection::make($sorts)
+            ->each(function (AllowedSort|string $sort): void {
                 if ($sort instanceof AllowedSort) {
-                    return $sort;
+                    $sort->sort($this);
+
+                    return;
                 }
 
-                return AllowedSort::field($sort);
-            })
-            ->each(function (AllowedSort $sort): void {
-                $sort->sort($this);
+                $descending = str_starts_with($sort, '-');
+                $resolved = $this->findSort(ltrim($sort, '-')) ?? AllowedSort::field($sort);
+                $resolved->sort($this, $descending);
             });
 
         return $this;
@@ -67,6 +68,10 @@ trait SortsQuery
 
     protected function findSort(string $property): ?AllowedSort
     {
+        if (! isset($this->allowedSorts)) {
+            return null;
+        }
+
         return $this->allowedSorts->first(fn (AllowedSort $sort): bool => $sort->isSort($property));
     }
 

@@ -14,7 +14,7 @@ trait IncludesQuery
 
     public function allowedIncludes(AllowedInclude|string ...$includes): static
     {
-        $this->allowedIncludes = collect($includes)->map(function (AllowedInclude|string $include): AllowedInclude {
+        $this->allowedIncludes = Collection::make($includes)->map(function (AllowedInclude|string $include): AllowedInclude {
             if ($include instanceof AllowedInclude) {
                 return $include;
             }
