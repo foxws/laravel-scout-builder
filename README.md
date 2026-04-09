@@ -127,6 +127,12 @@ composer test
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
+## AI Assistance
+
+This package is developed with AI assistance, primarily using [GitHub Copilot](https://github.com/features/copilot) and [Claude Sonnet](https://www.anthropic.com/claude).
+
+AI tools are used for suggestions and development acceleration. All final implementation decisions, code review, and adjustments are made by the maintainers. AI-generated contributions are welcome in pull requests, provided that a person is actively involved in the implementation and review process.
+
 ## Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
