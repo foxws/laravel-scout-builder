@@ -17,7 +17,7 @@ class EngineAwareness
         }
 
         $featureKey = $featureKey instanceof EngineFeature ? $featureKey->value : $featureKey;
-        $driver = (string) (Config::get('scout.driver') ?? 'null');
+        $driver = (string) (Config::get('scout.driver') ?: 'null');
 
         $allowedDrivers = (array) Config::get("scout-builder.engine_awareness.{$featureKey}_drivers", []);
 
