@@ -14,7 +14,7 @@ trait FiltersQuery
 
     public function allowedFilters(AllowedFilter|string ...$filters): static
     {
-        $this->allowedFilters = collect($filters)->map(function (AllowedFilter|string $filter): AllowedFilter {
+        $this->allowedFilters = Collection::make($filters)->map(function (AllowedFilter|string $filter): AllowedFilter {
             if ($filter instanceof AllowedFilter) {
                 return $filter;
             }

@@ -32,7 +32,7 @@ class ScoutBuilderRequest extends Request
             $sortParts = explode($this->delimiter(), $sortParts);
         }
 
-        return collect($sortParts)
+        return Collection::make($sortParts)
             ->map(fn (mixed $sort): mixed => is_string($sort) ? trim($sort) : $sort)
             ->filter();
     }
@@ -47,7 +47,7 @@ class ScoutBuilderRequest extends Request
             $includeParts = explode($this->delimiter(), $includeParts);
         }
 
-        return collect($includeParts)
+        return Collection::make($includeParts)
             ->map(fn (mixed $include): mixed => is_string($include) ? trim($include) : $include)
             ->filter();
     }
@@ -59,10 +59,10 @@ class ScoutBuilderRequest extends Request
         $filterParts = $this->getRequestData($filterParameterName, []);
 
         if (is_string($filterParts)) {
-            return collect();
+            return Collection::make();
         }
 
-        $filters = collect($filterParts);
+        $filters = Collection::make($filterParts);
 
         return $filters->map(function (mixed $value): mixed {
             return $this->getFilterValue($value);
@@ -76,7 +76,7 @@ class ScoutBuilderRequest extends Request
         }
 
         if (is_array($value)) {
-            return collect($value)
+            return Collection::make($value)
                 ->map(function (mixed $innerValue): mixed {
                     return $this->getFilterValue($innerValue);
                 })

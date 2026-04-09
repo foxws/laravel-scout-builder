@@ -14,7 +14,7 @@ trait SortsQuery
 
     public function allowedSorts(AllowedSort|string ...$sorts): static
     {
-        $this->allowedSorts = collect($sorts)->map(function (AllowedSort|string $sort): AllowedSort {
+        $this->allowedSorts = Collection::make($sorts)->map(function (AllowedSort|string $sort): AllowedSort {
             if ($sort instanceof AllowedSort) {
                 return $sort;
             }
@@ -39,7 +39,7 @@ trait SortsQuery
             return $this;
         }
 
-        collect($sorts)
+        Collection::make($sorts)
             ->each(function (AllowedSort|string $sort): void {
                 if ($sort instanceof AllowedSort) {
                     $sort->sort($this);
