@@ -58,7 +58,7 @@ trait SortsQuery
     protected function addRequestedSortsToQuery(): void
     {
         $this->request->sorts()->each(function (string $property): void {
-            $descending = str_starts_with($property, '-');
+            $descending = str_starts_with($property, '-') ? true : null;
             $key = ltrim($property, '-');
             $sort = $this->findSort($key);
 
