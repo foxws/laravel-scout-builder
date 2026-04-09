@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 0.0.4 - 2026-04-09
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/0.0.3...0.0.4
+
 ## 0.0.3 - 2026-04-09
 
 **Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/0.0.2...0.0.3
