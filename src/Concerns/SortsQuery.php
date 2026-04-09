@@ -40,15 +40,16 @@ trait SortsQuery
         }
 
         collect($sorts)
-            ->map(function (AllowedSort|string $sort): AllowedSort {
+            ->each(function (AllowedSort|string $sort): void {
                 if ($sort instanceof AllowedSort) {
-                    return $sort;
+                    $sort->sort($this);
+
+                    return;
                 }
 
-                return $this->findSort(ltrim($sort, '-')) ?? AllowedSort::field($sort);
-            })
-            ->each(function (AllowedSort $sort): void {
-                $sort->sort($this);
+                $descending = str_starts_with($sort, '-');
+                $resolved = $this->findSort(ltrim($sort, '-')) ?? AllowedSort::field($sort);
+                $resolved->sort($this, $descending);
             });
 
         return $this;
@@ -67,6 +68,10 @@ trait SortsQuery
 
     protected function findSort(string $property): ?AllowedSort
     {
+        if (! isset($this->allowedSorts)) {
+            return null;
+        }
+
         return $this->allowedSorts->first(fn (AllowedSort $sort): bool => $sort->isSort($property));
     }
 
