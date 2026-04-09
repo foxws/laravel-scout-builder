@@ -45,7 +45,7 @@ trait SortsQuery
                     return $sort;
                 }
 
-                return AllowedSort::field($sort);
+                return $this->findSort(ltrim($sort, '-')) ?? AllowedSort::field($sort);
             })
             ->each(function (AllowedSort $sort): void {
                 $sort->sort($this);
