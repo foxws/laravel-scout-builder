@@ -97,6 +97,35 @@ it('parses sorts and typed filters from the request', function () {
         ]);
 });
 
+it('does not recompute the search term once it has been resolved on an instance', function () {
+    $request = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'query' => 'foo',
+    ]));
+
+    expect($request->search())->toBe('foo');
+
+    $request->query->remove('query');
+
+    expect($request->search())->toBe('foo');
+
+    $request->query->set('query', 'bar');
+
+    expect($request->search())->toBe('foo');
+});
+
+it('resolves an independent search term for each new request instance', function () {
+    $first = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'query' => 'foo',
+    ]));
+
+    $second = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'query' => 'bar',
+    ]));
+
+    expect($first->search())->toBe('foo')
+        ->and($second->search())->toBe('bar');
+});
+
 it('applies allowed filters to scout where and whereIn clauses', function () {
     $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
