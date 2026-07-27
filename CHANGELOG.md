@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.0.0 - 2026-07-27
+
+### What's Changed
+
+* build(deps): bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/foxws/laravel-scout-builder/pull/4
+* Enhance ScoutBuilder with caching for search and filters by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/6
+* build(deps): bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/foxws/laravel-scout-builder/pull/5
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/foxws/laravel-scout-builder/pull/4
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/0.0.4...1.0.0
+
 ## 0.0.4 - 2026-04-09
 
 **Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/0.0.3...0.0.4
