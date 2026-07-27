@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Config;
 
 class ScoutBuilderRequest extends Request
 {
+    protected ?string $cachedSearch = null;
+
+    protected ?Collection $cachedSorts = null;
+
+    protected ?Collection $cachedIncludes = null;
+
+    protected ?Collection $cachedFilters = null;
+
     public static function fromRequest(Request $request): static
     {
         return static::createFrom($request, new static);
@@ -17,56 +25,64 @@ class ScoutBuilderRequest extends Request
 
     public function search(): string
     {
-        $queryParameterName = (string) Config::get('scout-builder.parameters.query', 'query');
+        return $this->cachedSearch ??= (function (): string {
+            $queryParameterName = (string) Config::get('scout-builder.parameters.query', 'query');
 
-        return trim((string) $this->getRequestData($queryParameterName, ''));
+            return trim((string) $this->getRequestData($queryParameterName, ''));
+        })();
     }
 
     public function sorts(): Collection
     {
-        $sortParameterName = (string) Config::get('scout-builder.parameters.sort', 'sort');
+        return $this->cachedSorts ??= (function (): Collection {
+            $sortParameterName = (string) Config::get('scout-builder.parameters.sort', 'sort');
 
-        $sortParts = $this->getRequestData($sortParameterName);
+            $sortParts = $this->getRequestData($sortParameterName);
 
-        if (is_string($sortParts)) {
-            $sortParts = explode($this->delimiter(), $sortParts);
-        }
+            if (is_string($sortParts)) {
+                $sortParts = explode($this->delimiter(), $sortParts);
+            }
 
-        return Collection::make($sortParts)
-            ->map(fn (mixed $sort): mixed => is_string($sort) ? trim($sort) : $sort)
-            ->filter();
+            return Collection::make($sortParts)
+                ->map(fn (mixed $sort): mixed => is_string($sort) ? trim($sort) : $sort)
+                ->filter();
+        })();
     }
 
     public function includes(): Collection
     {
-        $includeParameterName = (string) Config::get('scout-builder.parameters.include', 'include');
+        return $this->cachedIncludes ??= (function (): Collection {
+            $includeParameterName = (string) Config::get('scout-builder.parameters.include', 'include');
 
-        $includeParts = $this->getRequestData($includeParameterName);
+            $includeParts = $this->getRequestData($includeParameterName);
 
-        if (is_string($includeParts)) {
-            $includeParts = explode($this->delimiter(), $includeParts);
-        }
+            if (is_string($includeParts)) {
+                $includeParts = explode($this->delimiter(), $includeParts);
+            }
 
-        return Collection::make($includeParts)
-            ->map(fn (mixed $include): mixed => is_string($include) ? trim($include) : $include)
-            ->filter();
+            return Collection::make($includeParts)
+                ->map(fn (mixed $include): mixed => is_string($include) ? trim($include) : $include)
+                ->filter();
+        })();
     }
 
     public function filters(): Collection
     {
-        $filterParameterName = (string) Config::get('scout-builder.parameters.filter', 'filter');
+        return $this->cachedFilters ??= (function (): Collection {
+            $filterParameterName = (string) Config::get('scout-builder.parameters.filter', 'filter');
 
-        $filterParts = $this->getRequestData($filterParameterName, []);
+            $filterParts = $this->getRequestData($filterParameterName, []);
 
-        if (is_string($filterParts)) {
-            return Collection::make();
-        }
+            if (is_string($filterParts)) {
+                return Collection::make();
+            }
 
-        $filters = Collection::make($filterParts);
+            $filters = Collection::make($filterParts);
 
-        return $filters->map(function (mixed $value): mixed {
-            return $this->getFilterValue($value);
-        });
+            return $filters->map(function (mixed $value): mixed {
+                return $this->getFilterValue($value);
+            });
+        })();
     }
 
     protected function getFilterValue(mixed $value): mixed

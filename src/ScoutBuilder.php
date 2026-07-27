@@ -29,6 +29,9 @@ class ScoutBuilder
 
     protected ScoutBuilderRequest $request;
 
+    /**
+     * @param  Builder<TModel>  $subject
+     */
     public function __construct(
         protected Builder $subject,
         ?Request $request = null,
@@ -89,14 +92,15 @@ class ScoutBuilder
                 ? ScoutBuilderRequest::fromRequest($request)
                 : app(ScoutBuilderRequest::class);
 
-            /** @phpstan-ignore-next-line */
+            /**
+             * @var Builder<T> $subject
+             *
+             * @phpstan-ignore-next-line
+             */
             $subject = $subject::search($queryRequest->search());
         }
 
-        /** @var static<T> $scoutBuilder */
-        $scoutBuilder = new static($subject, $request);
-
-        return $scoutBuilder;
+        return new static($subject, $request);
     }
 
     public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): LengthAwarePaginator
