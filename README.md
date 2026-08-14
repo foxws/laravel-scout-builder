@@ -11,12 +11,7 @@ A [Laravel Scout](https://laravel.com/docs/scout) query builder inspired by and 
 
 ## Documentation
 
-- [Filters](docs/filters.md)
-- [Sorts](docs/sorts.md)
-- [Includes](docs/includes.md)
-- [Pagination](docs/pagination.md)
-- [Engine Awareness](docs/engine-awareness.md)
-- [Configuration](docs/configuration.md)
+See the [full documentation](https://foxws.github.io/laravel-scout-builder/) (or browse [`docs/`](docs) directly): [Installation](docs/installation.md), [Usage](docs/usage.md), [Filters](docs/filters.md), [Sorts](docs/sorts.md), [Includes](docs/includes.md), [Pagination](docs/pagination.md), [Engine Awareness](docs/engine-awareness.md), [Configuration](docs/configuration.md).
 
 ## Installation
 
