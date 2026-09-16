@@ -1,23 +1,33 @@
+---
+section: Usage
+order: 3
+---
+
 # Sorts
 
-Sorts are applied from the HTTP request's `sort` parameter. Prefix a sort name with `-` to sort descending. Multiple sorts can be comma-separated. Only sort names that are explicitly allowed are accepted — unknown names throw an `InvalidSortQuery` exception.
+Sorts come from the `sort` parameter on the request. Prefix a name with `-`
+to sort descending, and combine multiple sorts with commas. Like filters,
+only sort names you've explicitly allowed are accepted — anything else
+throws an `InvalidSortQuery` exception.
 
-Request examples:
+Examples:
 
-- `?sort=created_at` — ascending
-- `?sort=-created_at` — descending
-- `?sort=-created_at,title` — multiple sorts
+| Request | Result |
+|---|---|
+| `?sort=created_at` | Ascending |
+| `?sort=-created_at` | Descending |
+| `?sort=-created_at,title` | Descending by `created_at`, then ascending by `title` |
 
 ## Field
 
-Applies a Scout `orderBy()`.
+Sorts by a column, using Scout's `orderBy()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
     ->allowedSorts('title', 'created_at');
 ```
 
-Or using the explicit static factory:
+Or use the explicit factory method:
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -26,7 +36,7 @@ ScoutBuilder::for(Post::class, $request)
 
 ## Latest / Oldest
 
-Sort by a timestamp column using a friendly name.
+Sort by a timestamp column, under a friendlier public name.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -36,14 +46,14 @@ ScoutBuilder::for(Post::class, $request)
     );
 ```
 
-Request: `?sort=recent` maps to `orderBy('published_at', 'desc')`.
-Request: `?sort=chronological` maps to `orderBy('published_at', 'asc')`.
+`?sort=recent` becomes `orderBy('published_at', 'desc')`.
+`?sort=chronological` becomes `orderBy('published_at', 'asc')`.
 
-When sorted in reverse (prefixed with `-`), the directions flip.
+Prefixing either with `-` flips the direction.
 
 ## Default Sort
 
-Applied when no `sort` parameter is present in the request.
+Used only when the request has no `sort` parameter at all.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -51,7 +61,7 @@ ScoutBuilder::for(Post::class, $request)
     ->defaultSort('-created_at');
 ```
 
-Multiple defaults:
+For more than one default sort:
 
 ```php
 ->defaultSorts('-created_at', 'title')
@@ -59,7 +69,7 @@ Multiple defaults:
 
 ## Descending Default
 
-Mark a sort as descending by default when it is used:
+Make a sort descending by default, without the client needing to add `-`:
 
 ```php
 AllowedSort::field('created_at')->defaultDescending()
@@ -67,7 +77,7 @@ AllowedSort::field('created_at')->defaultDescending()
 
 ## Callback
 
-Apply custom sort logic with a closure.
+Write your own sort logic inline, with a closure.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -80,7 +90,8 @@ ScoutBuilder::for(Post::class, $request)
 
 ## Custom Sort Class
 
-Implement the `Sort` interface for reusable sort logic.
+For sort logic you want to reuse, implement the `Sort` interface instead of
+writing a closure.
 
 ```php
 use Foxws\ScoutBuilder\Sorts\Sort;

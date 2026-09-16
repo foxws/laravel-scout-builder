@@ -1,3 +1,8 @@
+---
+section: Reference
+order: 1
+---
+
 # Configuration
 
 Publish the config file:

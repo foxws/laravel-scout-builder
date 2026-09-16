@@ -1,10 +1,17 @@
+---
+section: Usage
+order: 2
+---
+
 # Filters
 
-Filters are applied from the HTTP request's `filter` parameter. Only filters that are explicitly allowed are accepted — any unknown filter names throw an `InvalidFilterQuery` exception.
+Filters come from the `filter` parameter on the request. You have to
+explicitly allow each filter you want to accept — any filter name that
+isn't allowed throws an `InvalidFilterQuery` exception.
 
 ## Exact
 
-Applies a Scout `where()` with an `=` operator.
+Matches a field exactly, using Scout's `where()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -15,7 +22,7 @@ Request: `?filter[status]=published`
 
 ## In
 
-Applies a Scout `whereIn()` using a comma-separated list.
+Matches any value from a comma-separated list, using Scout's `whereIn()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -26,7 +33,8 @@ Request: `?filter[tags]=php,laravel`
 
 ## Not In
 
-Applies a Scout `whereNotIn()`.
+The opposite of `in` — excludes matching values, using Scout's
+`whereNotIn()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -37,7 +45,13 @@ Request: `?filter[tags]=spam,draft`
 
 ## Trashed
 
-Includes soft-deleted records. Accepts `with`, `only`, or any other value to restore default behaviour.
+Controls whether soft-deleted records are included in the results.
+
+| Value | Behaviour |
+|---|---|
+| `with` | Include trashed records alongside normal ones |
+| `only` | Return only trashed records |
+| anything else | Default behaviour (no trashed records) |
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -48,7 +62,7 @@ Request: `?filter[trashed]=only`
 
 ## Fixed Operator
 
-Applies a `where()` with a fixed comparison operator.
+Compares a field using one operator that you fix in code up front.
 
 ```php
 use Foxws\ScoutBuilder\Enums\FilterOperator;
@@ -61,42 +75,41 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?filter[rating]=4`
 
-Available `FilterOperator` cases: `Equal`, `NotEqual`, `LessThan`, `LessThanOrEqual`, `GreaterThan`, `GreaterThanOrEqual`.
+`FilterOperator` cases:
+
+| Case | Meaning |
+|---|---|
+| `Equal` | `=` |
+| `NotEqual` | `!=` |
+| `LessThan` | `<` |
+| `LessThanOrEqual` | `<=` |
+| `GreaterThan` | `>` |
+| `GreaterThanOrEqual` | `>=` |
 
 ## Dynamic Operator
 
-Parses the operator from the filter value at runtime. Supports three input forms:
+Lets the client choose the operator at request time, instead of fixing it
+in code. It accepts three formats:
 
-**Colon-token string:**
+| Format | Example |
+|---|---|
+| Colon-token string | `?filter[price]=gte:120` |
+| Array payload | `?filter[price][operator]=gte&filter[price][value]=120` |
+| Plain scalar (falls back to `=`) | `?filter[price]=120` |
 
-```
-?filter[price]=gte:120
-```
-
-**Array payload:**
-
-```
-?filter[price][operator]=gte&filter[price][value]=120
-```
-
-**Plain scalar (falls back to `=`):**
-
-```
-?filter[price]=120
-```
-
-Available tokens: `eq`, `neq` / `ne`, `lt`, `lte`, `gt`, `gte`.
+Available tokens: `eq`, `neq` (or `ne`), `lt`, `lte`, `gt`, `gte`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
     ->allowedFilters(AllowedFilter::dynamicOperator('price'));
 ```
 
-An invalid token (e.g. `between:10,20`) throws `InvalidFilterValue`.
+An unrecognised token (e.g. `between:10,20`) throws `InvalidFilterValue`.
 
 ## Scope
 
-Applies a named Eloquent scope via Scout's `query()` callback. Useful for database and collection drivers. Multiple scopes are chained without overwriting each other.
+Calls a named Eloquent scope on your model, through Scout's `query()`
+callback. Multiple scopes chain together without overwriting each other.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -108,13 +121,18 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?filter[published]=1&filter[of_category]=news`
 
-The filter name is converted to camelCase (`of_category` → `scopeOfCategory`).
+The filter name is converted to camelCase, so `of_category` calls
+`scopeOfCategory`.
 
-> **Note:** The scope callback is silently ignored by remote engines (Algolia, Typesense, Meilisearch) since they do not execute Eloquent queries. Use this filter only with the `database` or `collection` driver, or add engine-awareness enforcement (see [engine-awareness.md](engine-awareness.md)).
+> **Note:** Remote search engines (Algolia, Typesense, Meilisearch) don't
+> run Eloquent queries, so they silently ignore scope filters. Only use this
+> filter with the `database` or `collection` driver — or add engine-awareness
+> enforcement so a mismatch gets caught early (see
+> [Engine Awareness](engine-awareness.md)).
 
 ## Callback
 
-Apply custom filter logic with a closure.
+Write your own filter logic inline, with a closure.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -127,7 +145,8 @@ ScoutBuilder::for(Post::class, $request)
 
 ## Custom Filter Class
 
-Implement the `Filter` interface for reusable filter logic.
+For filter logic you want to reuse, implement the `Filter` interface
+instead of writing a closure.
 
 ```php
 use Foxws\ScoutBuilder\Filters\Filter;
@@ -147,7 +166,14 @@ ScoutBuilder::for(Post::class, $request)
 
 ## Modifiers
 
-These modifiers can be chained on any `AllowedFilter`:
+You can chain these onto any `AllowedFilter` to fine-tune its behaviour:
+
+| Modifier | What it does |
+|---|---|
+| `->default(...)` | Value used when the filter is missing from the request |
+| `->nullable()` | Allow `null` through (skipped by default) |
+| `->ignore(...)` | Silently skip specific values |
+| `->delimiter(...)` | Change the multi-value separator (default `,`) |
 
 ```php
 AllowedFilter::exact('status')

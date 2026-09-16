@@ -1,13 +1,14 @@
 ---
-sidebar_position: 3
+section: Usage
+order: 1
 ---
 
 # Usage
 
 ## Quick Start
 
-Add the `Searchable` trait to your model as usual, then build a search
-endpoint:
+Add the `Searchable` trait to your model, as you normally would for Scout.
+Then build a search endpoint like this:
 
 ```php
 use Foxws\ScoutBuilder\AllowedFilter;
@@ -28,20 +29,24 @@ $results = ScoutBuilder::for(Post::class, $request)
     ->get();
 ```
 
-This reads directly from the incoming `$request`:
+`ScoutBuilder` reads everything it needs straight from the incoming
+`$request`:
 
-| Parameter           | Example                     |
-| -------------------- | ---------------------------- |
-| Search query         | `?query=laravel`             |
-| Exact filter         | `?filter[status]=published`  |
-| Multi-value filter   | `?filter[tags]=php,laravel`  |
-| Operator filter      | `?filter[price]=gte:100`     |
-| Sort                 | `?sort=-recent,title`        |
-| Paginate             | `?page[number]=2&page[size]=15` |
+| Parameter | Example |
+|---|---|
+| Search query | `?query=laravel` |
+| Exact filter | `?filter[status]=published` |
+| Multi-value filter | `?filter[tags]=php,laravel` |
+| Operator filter | `?filter[price]=gte:100` |
+| Sort | `?sort=-recent,title` |
+| Paginate | `?page[number]=2&page[size]=15` |
 
-See [Pagination](./pagination.md) for the full `jsonPaginate()` reference.
+See [Pagination](./pagination.md) for everything `jsonPaginate()` can do.
 
 ## Wrapping an Existing Scout Builder
+
+Already have a Scout builder with its own conditions on it? Pass that in
+instead of a model class:
 
 ```php
 $builder = Post::search('laravel')->where('is_published', true);
@@ -53,6 +58,9 @@ $results = ScoutBuilder::for($builder, $request)
 
 ## Facade
 
+You can also reach for the `ScoutBuilder` facade instead of the class
+directly:
+
 ```php
 use Foxws\ScoutBuilder\Facades\ScoutBuilder;
 
@@ -63,15 +71,17 @@ $results = ScoutBuilder::for(Post::class, $request)
 
 ## Differences from spatie/laravel-query-builder
 
-| Feature                                       | spatie/laravel-query-builder | foxws/laravel-scout-builder                                |
-| ---------------------------------------------- | ----------------------------- | ------------------------------------------------------------ |
-| Underlying builder                             | Eloquent `Builder`            | Scout `Builder`                                               |
-| `AllowedInclude`                               | ✅                             | ✅ via Scout `query()` callback (database/collection drivers) |
-| `FiltersPartial`, `FiltersBeginsWith`, etc.    | ✅                             | — (text search handled by Scout itself)                      |
-| `AllowedFilter::operator()`                    | via `FiltersOperator`         | ✅ first-class with `FilterOperator` enum                     |
-| `AllowedFilter::dynamicOperator()`             | —                              | ✅ colon-token + array payload                                |
-| `AllowedFilter::notIn()`                       | —                              | ✅                                                             |
-| `AllowedSort::latest()` / `oldest()`           | —                              | ✅                                                             |
-| `jsonPaginate()`                               | ✅ (Eloquent only)             | ✅ JSON:API `page[number]`/`page[size]`                        |
-| Engine awareness                               | —                              | ✅ `ScoutDriver` + `EngineFeature` enums                       |
-| Request scalar casting                         | raw strings                   | ✅ auto-casts `'true'`, `'42'`, `'null'`, etc.                 |
+If you're coming from spatie/laravel-query-builder, here's what's different:
+
+| Feature | spatie/laravel-query-builder | foxws/laravel-scout-builder |
+|---|---|---|
+| Underlying builder | Eloquent `Builder` | Scout `Builder` |
+| `AllowedInclude` | Yes | Yes, via Scout's `query()` callback (database/collection drivers only) |
+| `FiltersPartial`, `FiltersBeginsWith`, etc. | Yes | No — text search is handled by Scout itself |
+| `AllowedFilter::operator()` | Via `FiltersOperator` | Yes, first-class, with a `FilterOperator` enum |
+| `AllowedFilter::dynamicOperator()` | No | Yes — colon-token or array payload |
+| `AllowedFilter::notIn()` | No | Yes |
+| `AllowedSort::latest()` / `oldest()` | No | Yes |
+| `jsonPaginate()` | Yes (Eloquent only) | Yes — JSON:API `page[number]`/`page[size]` |
+| Engine awareness | No | Yes — `ScoutDriver` + `EngineFeature` enums |
+| Request scalar casting | Raw strings | Auto-casts `'true'`, `'42'`, `'null'`, etc. |

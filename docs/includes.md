@@ -1,14 +1,26 @@
+---
+section: Usage
+order: 4
+---
+
 # Includes
 
-Includes load relationships or aggregates via Scout's `query()` callback, which gives you a full Eloquent builder. This means they apply during the Eloquent hydration step — after the search engine returns matching IDs.
+Includes let you load relationships or aggregate counts through Scout's
+`query()` callback, which hands you a full Eloquent builder. Because of
+this, includes run during the Eloquent hydration step — after the search
+engine has already found the matching IDs.
 
-> **Driver note:** Include callbacks are only executed by drivers that use Eloquent to hydrate results (`database`, `collection`). Remote engines (Algolia, Typesense, Meilisearch) run the search themselves and do not call the `queryCallback` — includes are silently ignored for those drivers.
+> **Driver note:** Only drivers that use Eloquent to hydrate results
+> (`database`, `collection`) run include callbacks. Remote engines (Algolia,
+> Typesense, Meilisearch) do their own search and never call the
+> `queryCallback`, so includes are silently ignored on those drivers.
 
-Includes are driven by the `?include=` request parameter (comma-separated).
+Includes come from the `include` request parameter, as a comma-separated
+list.
 
 ## Relationship
 
-Eagerly loads a relationship via `with()`.
+Eager-loads a relationship with `with()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -20,7 +32,7 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?include=author,comments`
 
-Passing a plain string is shorthand for `relationship()`:
+A plain string is shorthand for `relationship()`:
 
 ```php
 ->allowedIncludes('author', 'comments')
@@ -28,7 +40,7 @@ Passing a plain string is shorthand for `relationship()`:
 
 ## Count
 
-Loads an aggregate count of a relationship via `withCount()`.
+Loads a relationship count with `withCount()`.
 
 ```php
 ScoutBuilder::for(Post::class, $request)
@@ -37,11 +49,12 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?include=comments`
 
-The result adds a `comments_count` attribute to each model.
+Each model gets a `comments_count` attribute in the result.
 
 ## Internal Name
 
-Use `$internalName` to decouple the public parameter name from the relationship or column name:
+Give an include a public name that differs from the underlying relationship
+or column:
 
 ```php
 AllowedInclude::relationship('writer', 'author')   // ?include=writer → ->with('author')
@@ -50,7 +63,7 @@ AllowedInclude::count('numComments', 'comments')   // ?include=numComments → -
 
 ## Callback
 
-Custom include logic with a closure:
+Write your own include logic inline, with a closure:
 
 ```php
 AllowedInclude::callback('latestComments', function (Builder $query, string $include): void {
@@ -62,7 +75,8 @@ AllowedInclude::callback('latestComments', function (Builder $query, string $inc
 
 ## Custom Include Class
 
-Implement the `Includable` interface for reusable include logic:
+For include logic you want to reuse, implement the `Includable` interface
+instead of writing a closure:
 
 ```php
 use Foxws\ScoutBuilder\Includes\Includable;
@@ -90,11 +104,13 @@ ScoutBuilder::for(Post::class, $request)
 
 ## Chaining
 
-Multiple includes chain safely — each wraps the previous `queryCallback` so no include overwrites another.
+You can combine multiple includes safely. Each one wraps the previous
+`queryCallback`, so none of them overwrite each other.
 
 ## Disabling the Exception
 
-Unknown include names throw `InvalidIncludeQuery` by default. To silently ignore them instead:
+By default, an unknown include name throws `InvalidIncludeQuery`. To ignore
+unknown names instead of throwing:
 
 ```php
 // config/scout-builder.php
