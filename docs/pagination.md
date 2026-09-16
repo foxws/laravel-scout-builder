@@ -1,15 +1,23 @@
+---
+section: Usage
+order: 5
+---
+
 # Pagination
 
-`ScoutBuilder` supports JSON:API-style pagination via dedicated methods. All methods read `page[number]` and `page[size]` from the request and delegate to Scout's native paginators.
+`ScoutBuilder` supports JSON:API-style pagination through two dedicated
+methods. Both read `page[number]` and `page[size]` from the request and
+hand off to Scout's own paginators.
 
 ## Methods
 
 | Method | Scout equivalent | Returns |
 |---|---|---|
-| `jsonPaginate()` | `paginate()` | `LengthAwarePaginator` — includes total count |
-| `jsonSimplePaginate()` | `simplePaginate()` | `Paginator` — next/prev only, more efficient |
+| `jsonPaginate()` | `paginate()` | `LengthAwarePaginator` — includes a total count |
+| `jsonSimplePaginate()` | `simplePaginate()` | `Paginator` — next/previous only, more efficient |
 
-> Note: Scout does not support cursor pagination (`cursorPaginate`). Use `jsonSimplePaginate()` for the most efficient option when total counts are not needed.
+> Scout doesn't support cursor pagination (`cursorPaginate()`). If you don't
+> need a total count, `jsonSimplePaginate()` is the more efficient choice.
 
 ## Basic Usage
 
@@ -31,7 +39,8 @@ $results = ScoutBuilder::for(Post::class, $request)
     ->jsonSimplePaginate();
 ```
 
-Both return standard Laravel paginators, so they work directly with Eloquent API Resources and Inertia props.
+Both return standard Laravel paginators, so they work directly with
+Eloquent API Resources and Inertia props.
 
 ## Query Parameters
 
@@ -48,7 +57,8 @@ GET /posts?query=laravel&filter[status]=published&sort=title&page[number]=2&page
 
 ## Overriding Defaults Per-Call
 
-You can override `max_size` and `default_size` for a specific endpoint:
+Need a different page size for one specific endpoint? Override `max_size`
+and `default_size` right there:
 
 ```php
 $results = ScoutBuilder::for(Post::class, $request)
@@ -58,7 +68,7 @@ $results = ScoutBuilder::for(Post::class, $request)
 
 ## Configuration
 
-The parameter names and default sizes are defined in `config/scout-builder.php`:
+The parameter names and default sizes live in `config/scout-builder.php`:
 
 ```php
 'pagination' => [
@@ -70,7 +80,7 @@ The parameter names and default sizes are defined in `config/scout-builder.php`:
 ],
 ```
 
-Publish the config to customise these values:
+Publish the config file if you want to change these values:
 
 ```bash
 php artisan vendor:publish --tag="scout-builder-config"
