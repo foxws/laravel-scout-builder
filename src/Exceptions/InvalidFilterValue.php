@@ -13,6 +13,6 @@ final class InvalidFilterValue extends InvalidQuery
 
     public static function invalidOperatorPayload(): static
     {
-        return new static('Dynamic operator filters expect either a scalar value like `gte:10` or an array payload with `operator` and `value` keys.');
+        return new self('Dynamic operator filters expect either a scalar value like `gte:10` or an array payload with `operator` and `value` keys.');
     }
 }

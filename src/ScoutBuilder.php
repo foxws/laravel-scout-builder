@@ -19,6 +19,21 @@ use Laravel\Scout\Builder;
  * @template TModel of Model
  *
  * @mixin Builder<TModel>
+ *
+ * @method $this within(string $index)
+ * @method $this where(string $field, mixed $operator, mixed $value = null)
+ * @method $this whereIn(string $field, \Illuminate\Contracts\Support\Arrayable|array $values)
+ * @method $this whereNotIn(string $field, \Illuminate\Contracts\Support\Arrayable|array $values)
+ * @method $this withTrashed()
+ * @method $this onlyTrashed()
+ * @method $this take(int $limit)
+ * @method $this orderBy(string $column, string $direction = 'asc')
+ * @method $this orderByDesc(string $column)
+ * @method $this latest(?string $column = null)
+ * @method $this oldest(?string $column = null)
+ * @method $this options(array $options)
+ * @method $this withRawResults(callable $callback)
+ * @method $this tap(callable $callback)
  */
 class ScoutBuilder
 {
@@ -103,6 +118,9 @@ class ScoutBuilder
         return new static($subject, $request);
     }
 
+    /**
+     * @return \Illuminate\Pagination\LengthAwarePaginator<int, TModel>
+     */
     public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): LengthAwarePaginator
     {
         return $this->subject->paginate(
@@ -112,6 +130,9 @@ class ScoutBuilder
         );
     }
 
+    /**
+     * @return \Illuminate\Pagination\Paginator<int, TModel>
+     */
     public function jsonSimplePaginate(?int $maxResults = null, ?int $defaultSize = null): Paginator
     {
         return $this->subject->simplePaginate(
