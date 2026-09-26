@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.0.2 - 2026-09-26
+
+### What's Changed
+
+* Document forwarded methods by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/16
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.0.1...1.0.2
+
 ## 1.0.1 - 2026-09-16
 
 ### What's Changed
