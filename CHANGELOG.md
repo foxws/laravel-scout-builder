@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.0.3 - 2026-10-02
+
+### What's Changed
+
+* docs: add the foxws.nl homepage group, a hero lead and a clearer introduction by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/17
+* Raise PHPStan to level 8, and handle malformed sort and include parameters by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/18
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.0.2...1.0.3
+
 ## 1.0.2 - 2026-09-26
 
 ### What's Changed
