@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 
 trait FiltersQuery
 {
+    /** @var Collection<int, AllowedFilter> */
     protected Collection $allowedFilters;
 
     public function allowedFilters(AllowedFilter|string ...$filters): static
@@ -20,7 +21,7 @@ trait FiltersQuery
             }
 
             return AllowedFilter::exact($filter);
-        });
+        })->values();
 
         $this->ensureAllFiltersExist();
         $this->addFiltersToQuery();
@@ -60,7 +61,7 @@ trait FiltersQuery
         $unknownFilters = $requestedFilterNames->diff($allowedFilterNames);
 
         if ($unknownFilters->isNotEmpty()) {
-            throw InvalidFilterQuery::filtersNotAllowed($unknownFilters, $allowedFilterNames);
+            throw InvalidFilterQuery::filtersNotAllowed($unknownFilters->values(), $allowedFilterNames);
         }
     }
 }

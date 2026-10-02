@@ -472,3 +472,23 @@ it('throws an exception for disallowed includes', function () {
         'include' => 'author,tags',
     ]))->allowedIncludes('author');
 })->throws(InvalidIncludeQuery::class);
+
+it('ignores nested arrays in the sort and include parameters', function () {
+    $request = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'sort' => ['title', ['nested' => 'value'], ' '],
+        'include' => ['author', ['nested' => 'value']],
+    ]));
+
+    expect($request->sorts()->all())->toBe(['title'])
+        ->and($request->includes()->all())->toBe(['author']);
+});
+
+it('splits on a comma when the configured delimiter is empty', function () {
+    config()->set('scout-builder.delimiter', '');
+
+    $request = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'sort' => 'title,-created_at',
+    ]));
+
+    expect($request->sorts()->all())->toBe(['title', '-created_at']);
+});

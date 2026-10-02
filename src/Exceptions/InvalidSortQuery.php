@@ -8,6 +8,10 @@ use Illuminate\Support\Collection;
 
 final class InvalidSortQuery extends InvalidQuery
 {
+    /**
+     * @param  Collection<int, string>  $unknownSorts
+     * @param  Collection<int, string>  $allowedSorts
+     */
     public function __construct(
         public Collection $unknownSorts,
         public Collection $allowedSorts,
@@ -18,6 +22,10 @@ final class InvalidSortQuery extends InvalidQuery
         parent::__construct("Requested sort(s) `{$unknownSorts}` are not allowed. Allowed sort(s) are `{$allowedSorts}`.");
     }
 
+    /**
+     * @param  Collection<int, string>  $unknownSorts
+     * @param  Collection<int, string>  $allowedSorts
+     */
     public static function sortsNotAllowed(Collection $unknownSorts, Collection $allowedSorts): static
     {
         return new self($unknownSorts, $allowedSorts);

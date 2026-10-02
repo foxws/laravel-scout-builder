@@ -6,12 +6,16 @@ namespace Foxws\ScoutBuilder\Sorts;
 
 use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Support\EngineAwareness;
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 
 class SortsLatest implements Sort
 {
     public function __construct(protected ?string $column = null) {}
 
+    /**
+     * @param  Builder<Model>  $query
+     */
     public function __invoke(Builder $query, bool $descending, string $property): void
     {
         EngineAwareness::ensureFeatureSupport(EngineFeature::FieldSort);

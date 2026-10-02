@@ -8,7 +8,7 @@ use Foxws\ScoutBuilder\ScoutBuilderFactory;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Foxws\ScoutBuilder\ScoutBuilder for(\Laravel\Scout\Builder|\Illuminate\Database\Eloquent\Model|string $subject, ?\Illuminate\Http\Request $request = null)
+ * @method static \Foxws\ScoutBuilder\ScoutBuilder<\Illuminate\Database\Eloquent\Model> for(\Laravel\Scout\Builder<\Illuminate\Database\Eloquent\Model>|\Illuminate\Database\Eloquent\Model|string $subject, ?\Illuminate\Http\Request $request = null)
  *
  * @see ScoutBuilderFactory
  */

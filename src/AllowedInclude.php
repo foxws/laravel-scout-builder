@@ -8,6 +8,7 @@ use Foxws\ScoutBuilder\Includes\Includable;
 use Foxws\ScoutBuilder\Includes\IncludesCallback;
 use Foxws\ScoutBuilder\Includes\IncludesCount;
 use Foxws\ScoutBuilder\Includes\IncludesRelationship;
+use Illuminate\Database\Eloquent\Model;
 
 class AllowedInclude
 {
@@ -41,6 +42,9 @@ class AllowedInclude
         return new static($name, $includeClass, $internalName);
     }
 
+    /**
+     * @param  ScoutBuilder<Model>  $query
+     */
     public function include(ScoutBuilder $query): void
     {
         ($this->includeClass)($query->getScoutBuilder(), $this->internalName);

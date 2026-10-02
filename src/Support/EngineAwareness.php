@@ -19,7 +19,10 @@ class EngineAwareness
         $featureKey = $featureKey instanceof EngineFeature ? $featureKey->value : $featureKey;
         $driver = (string) (Config::get('scout.driver') ?: 'null');
 
-        $allowedDrivers = (array) Config::get("scout-builder.engine_awareness.{$featureKey}_drivers", []);
+        $allowedDrivers = array_values(array_filter(
+            (array) Config::get("scout-builder.engine_awareness.{$featureKey}_drivers", []),
+            is_string(...),
+        ));
 
         if (! in_array($driver, $allowedDrivers, true)) {
             throw UnsupportedEngineFeature::featureNotSupported($featureKey, $driver, $allowedDrivers);

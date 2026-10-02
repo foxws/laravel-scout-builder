@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 
 trait IncludesQuery
 {
+    /** @var Collection<int, AllowedInclude> */
     protected Collection $allowedIncludes;
 
     public function allowedIncludes(AllowedInclude|string ...$includes): static
@@ -20,7 +21,7 @@ trait IncludesQuery
             }
 
             return AllowedInclude::relationship($include);
-        });
+        })->values();
 
         $this->ensureAllIncludesExist();
         $this->addIncludesToQuery();
@@ -53,7 +54,7 @@ trait IncludesQuery
         $unknownIncludes = $requestedIncludeNames->diff($allowedIncludeNames);
 
         if ($unknownIncludes->isNotEmpty()) {
-            throw InvalidIncludeQuery::includesNotAllowed($unknownIncludes, $allowedIncludeNames);
+            throw InvalidIncludeQuery::includesNotAllowed($unknownIncludes->values(), $allowedIncludeNames);
         }
     }
 }

@@ -9,6 +9,7 @@ use Foxws\ScoutBuilder\Sorts\SortsCallback;
 use Foxws\ScoutBuilder\Sorts\SortsField;
 use Foxws\ScoutBuilder\Sorts\SortsLatest;
 use Foxws\ScoutBuilder\Sorts\SortsOldest;
+use Illuminate\Database\Eloquent\Model;
 
 class AllowedSort
 {
@@ -51,6 +52,9 @@ class AllowedSort
         return new static($name, new SortsOldest($column), $column ?? $name);
     }
 
+    /**
+     * @param  ScoutBuilder<Model>  $query
+     */
     public function sort(ScoutBuilder $query, ?bool $descending = null): void
     {
         $descending = $descending ?? $this->defaultDescending;

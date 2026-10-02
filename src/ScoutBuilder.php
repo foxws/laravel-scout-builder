@@ -22,8 +22,8 @@ use Laravel\Scout\Builder;
  *
  * @method $this within(string $index)
  * @method $this where(string $field, mixed $operator, mixed $value = null)
- * @method $this whereIn(string $field, \Illuminate\Contracts\Support\Arrayable|array $values)
- * @method $this whereNotIn(string $field, \Illuminate\Contracts\Support\Arrayable|array $values)
+ * @method $this whereIn(string $field, \Illuminate\Contracts\Support\Arrayable<int, mixed>|array<int, mixed> $values)
+ * @method $this whereNotIn(string $field, \Illuminate\Contracts\Support\Arrayable<int, mixed>|array<int, mixed> $values)
  * @method $this withTrashed()
  * @method $this onlyTrashed()
  * @method $this take(int $limit)
@@ -31,7 +31,7 @@ use Laravel\Scout\Builder;
  * @method $this orderByDesc(string $column)
  * @method $this latest(?string $column = null)
  * @method $this oldest(?string $column = null)
- * @method $this options(array $options)
+ * @method $this options(array<string, mixed> $options)
  * @method $this withRawResults(callable $callback)
  * @method $this tap(callable $callback)
  */
@@ -80,11 +80,17 @@ class ScoutBuilder
         return $this;
     }
 
+    /**
+     * @return Builder<TModel>
+     */
     public function getScoutBuilder(): Builder
     {
         return $this->subject;
     }
 
+    /**
+     * @return Builder<TModel>
+     */
     public function getSubject(): Builder
     {
         return $this->subject;
@@ -119,7 +125,7 @@ class ScoutBuilder
     }
 
     /**
-     * @return \Illuminate\Pagination\LengthAwarePaginator<int, TModel>
+     * @return LengthAwarePaginator<int, TModel>
      */
     public function jsonPaginate(?int $maxResults = null, ?int $defaultSize = null): LengthAwarePaginator
     {
@@ -131,7 +137,7 @@ class ScoutBuilder
     }
 
     /**
-     * @return \Illuminate\Pagination\Paginator<int, TModel>
+     * @return Paginator<int, TModel>
      */
     public function jsonSimplePaginate(?int $maxResults = null, ?int $defaultSize = null): Paginator
     {
@@ -158,6 +164,9 @@ class ScoutBuilder
         return "{$paginationParameter}[{$numberParameter}]";
     }
 
+    /**
+     * @param  array<int, mixed>  $arguments
+     */
     public function __call(string $name, array $arguments): mixed
     {
         $result = $this->forwardCallTo($this->subject, $name, $arguments);
