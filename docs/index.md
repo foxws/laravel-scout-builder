@@ -2,6 +2,7 @@
 title: Introduction
 metadata:
   role: Search
+  group: search
   eyebrow: "Laravel Scout · Query Builder · API Filters"
   desc: "Build safe Laravel Scout search queries straight from API requests."
   requires: "PHP ^8.4"
