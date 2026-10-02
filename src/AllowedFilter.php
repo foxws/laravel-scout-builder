@@ -13,6 +13,7 @@ use Foxws\ScoutBuilder\Filters\FiltersNotIn;
 use Foxws\ScoutBuilder\Filters\FiltersOperator;
 use Foxws\ScoutBuilder\Filters\FiltersScope;
 use Foxws\ScoutBuilder\Filters\FiltersTrashed;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
@@ -21,6 +22,7 @@ class AllowedFilter
 {
     protected string $internalName;
 
+    /** @var Collection<int, mixed> */
     protected Collection $ignored;
 
     protected mixed $default = null;
@@ -85,6 +87,9 @@ class AllowedFilter
         return new static($name, new FiltersScope, $internalName);
     }
 
+    /**
+     * @param  ScoutBuilder<Model>  $query
+     */
     public function filter(ScoutBuilder $query, mixed $value): void
     {
         $value = $this->splitFilterValue($value);
@@ -126,12 +131,15 @@ class AllowedFilter
     public function ignore(mixed ...$values): static
     {
         $this->ignored = $this->ignored
-            ->merge($values)
+            ->merge(array_values($values))
             ->flatten();
 
         return $this;
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getIgnored(): array
     {
         return $this->ignored->toArray();

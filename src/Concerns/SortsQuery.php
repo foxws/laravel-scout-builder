@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 
 trait SortsQuery
 {
+    /** @var Collection<int, AllowedSort> */
     protected Collection $allowedSorts;
 
     public function allowedSorts(AllowedSort|string ...$sorts): static
@@ -20,7 +21,7 @@ trait SortsQuery
             }
 
             return AllowedSort::field(ltrim($sort, '-'));
-        });
+        })->values();
 
         $this->ensureAllSortsExist();
         $this->addRequestedSortsToQuery();
@@ -86,7 +87,7 @@ trait SortsQuery
         $unknownSorts = $requestedSortNames->diff($allowedSortNames);
 
         if ($unknownSorts->isNotEmpty()) {
-            throw InvalidSortQuery::sortsNotAllowed($unknownSorts, $allowedSortNames);
+            throw InvalidSortQuery::sortsNotAllowed($unknownSorts->values(), $allowedSortNames);
         }
     }
 }

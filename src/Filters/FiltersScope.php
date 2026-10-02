@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Foxws\ScoutBuilder\Filters;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Scout\Builder;
 
 class FiltersScope implements Filter
 {
+    /**
+     * @param  Builder<Model>  $query
+     */
     public function __invoke(Builder $query, mixed $value, string $property): void
     {
         $scope = Str::camel($property);

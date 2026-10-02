@@ -12,10 +12,13 @@ class ScoutBuilderRequest extends Request
 {
     protected ?string $cachedSearch = null;
 
+    /** @var Collection<int, string>|null */
     protected ?Collection $cachedSorts = null;
 
+    /** @var Collection<int, string>|null */
     protected ?Collection $cachedIncludes = null;
 
+    /** @var Collection<int|string, mixed>|null */
     protected ?Collection $cachedFilters = null;
 
     public static function fromRequest(Request $request): static
@@ -32,6 +35,9 @@ class ScoutBuilderRequest extends Request
         })();
     }
 
+    /**
+     * @return Collection<int, string>
+     */
     public function sorts(): Collection
     {
         return $this->cachedSorts ??= (function (): Collection {
@@ -43,12 +49,13 @@ class ScoutBuilderRequest extends Request
                 $sortParts = explode($this->delimiter(), $sortParts);
             }
 
-            return Collection::make($sortParts)
-                ->map(fn (mixed $sort): mixed => is_string($sort) ? trim($sort) : $sort)
-                ->filter();
+            return Collection::make($this->names($sortParts));
         })();
     }
 
+    /**
+     * @return Collection<int, string>
+     */
     public function includes(): Collection
     {
         return $this->cachedIncludes ??= (function (): Collection {
@@ -60,12 +67,13 @@ class ScoutBuilderRequest extends Request
                 $includeParts = explode($this->delimiter(), $includeParts);
             }
 
-            return Collection::make($includeParts)
-                ->map(fn (mixed $include): mixed => is_string($include) ? trim($include) : $include)
-                ->filter();
+            return Collection::make($this->names($includeParts));
         })();
     }
 
+    /**
+     * @return Collection<int|string, mixed>
+     */
     public function filters(): Collection
     {
         return $this->cachedFilters ??= (function (): Collection {
@@ -73,7 +81,7 @@ class ScoutBuilderRequest extends Request
 
             $filterParts = $this->getRequestData($filterParameterName, []);
 
-            if (is_string($filterParts)) {
+            if (! is_array($filterParts)) {
                 return Collection::make();
             }
 
@@ -83,6 +91,26 @@ class ScoutBuilderRequest extends Request
                 return $this->getFilterValue($value);
             });
         })();
+    }
+
+    /**
+     * The trimmed, non-empty names in a sort or include parameter. Anything
+     * that isn't a string, like a nested array from the query string, is
+     * ignored instead of failing the request.
+     *
+     * @return list<string>
+     */
+    protected function names(mixed $parts): array
+    {
+        $names = [];
+
+        foreach (is_array($parts) ? $parts : [] as $part) {
+            if (is_string($part) && trim($part) !== '') {
+                $names[] = trim($part);
+            }
+        }
+
+        return $names;
     }
 
     protected function getFilterValue(mixed $value): mixed
@@ -153,8 +181,16 @@ class ScoutBuilderRequest extends Request
         return $this->input($key, $default);
     }
 
+    /**
+     * The configured delimiter, or a comma when it's empty: explode() can't
+     * split on an empty string.
+     *
+     * @return non-empty-string
+     */
     protected function delimiter(): string
     {
-        return (string) Config::get('scout-builder.delimiter', ',');
+        $delimiter = (string) Config::get('scout-builder.delimiter', ',');
+
+        return $delimiter !== '' ? $delimiter : ',';
     }
 }
