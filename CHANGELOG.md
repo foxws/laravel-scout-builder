@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.1.0 - 2026-10-14
+
+### What's Changed
+
+* Add Laravel Boost skill and tip by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/19
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.0.3...1.1.0
+
 ## 1.0.3 - 2026-10-02
 
 ### What's Changed
