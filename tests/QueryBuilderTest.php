@@ -271,11 +271,36 @@ it('supports dynamic operator filters with array payloads', function () {
         ]);
 });
 
-it('throws when a dynamic operator token is invalid', function () {
+it('compares the whole value for equality when a dynamic operator token is unknown', function (string $filterValue) {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'source' => $filterValue,
+        ],
+    ]))->allowedFilters(AllowedFilter::dynamicOperator('source'));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)
+        ->toBe([
+            [
+                'field' => 'source',
+                'operator' => '=',
+                'value' => $filterValue,
+            ],
+        ]);
+})->with([
+    'unknown token' => 'between:10',
+    'URL' => 'https://example.com?key=value',
+    'time' => '10:30',
+]);
+
+it('throws when a dynamic operator array payload has an unknown operator', function () {
     ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
         'filter' => [
-            'price' => 'between:10',
+            'price' => [
+                'operator' => 'between',
+                'value' => '10',
+            ],
         ],
     ]))->allowedFilters(AllowedFilter::dynamicOperator('price'));
 })->throws(InvalidFilterValue::class);
@@ -491,4 +516,80 @@ it('splits on a comma when the configured delimiter is empty', function () {
     ]));
 
     expect($request->sorts()->all())->toBe(['title', '-created_at']);
+});
+
+it('removes ignored values from a multi value filter', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => 'news,draft,guides',
+        ],
+    ]))->allowedFilters(AllowedFilter::in('category')->ignore('draft'));
+
+    expect($queryBuilder->getScoutBuilder()->whereIns)
+        ->toBe(['category' => ['news', 'guides']]);
+});
+
+it('skips a filter when every value is ignored', function (AllowedFilter $filter, string $filterValue) {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => $filterValue,
+        ],
+    ]))->allowedFilters($filter);
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([])
+        ->and($queryBuilder->getScoutBuilder()->whereIns)->toBe([]);
+})->with([
+    'scalar' => fn () => [AllowedFilter::exact('category')->ignore('draft'), 'draft'],
+    'multi value' => fn () => [AllowedFilter::in('category')->ignore(''), ',,'],
+    'nullable scalar' => fn () => [AllowedFilter::exact('category')->ignore('draft')->nullable(), 'draft'],
+    'nullable multi value' => fn () => [AllowedFilter::in('category')->ignore('draft')->nullable(), 'draft,draft'],
+]);
+
+it('skips a nullable filter when null is ignored', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => null,
+        ],
+    ]))->allowedFilters(AllowedFilter::exact('category')->ignore(null)->nullable());
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([]);
+});
+
+it('keeps null values inside an array value for a nullable filter', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => [null, 'news'],
+        ],
+    ]))->allowedFilters(AllowedFilter::in('category')->nullable());
+
+    expect($queryBuilder->getScoutBuilder()->whereIns)
+        ->toBe(['category' => [null, 'news']]);
+});
+
+it('removes ignored values from nested and associative array values', function () {
+    $receivedValues = [];
+
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'conditions' => [['draft', 'news'], ['draft']],
+            'published_between' => ['start' => '2026-01-01', 'end' => 'draft'],
+        ],
+    ]))->allowedFilters(
+        AllowedFilter::callback('conditions', function (Builder $query, mixed $value) use (&$receivedValues): void {
+            $receivedValues['conditions'] = $value;
+        })->ignore('draft'),
+        AllowedFilter::callback('published_between', function (Builder $query, mixed $value) use (&$receivedValues): void {
+            $receivedValues['published_between'] = $value;
+        })->ignore('draft'),
+    );
+
+    expect($receivedValues)->toBe([
+        'conditions' => [['news']],
+        'published_between' => ['start' => '2026-01-01'],
+    ]);
 });

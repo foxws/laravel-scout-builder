@@ -62,7 +62,7 @@ class FiltersOperator implements Filter
         $operator = FilterOperator::fromToken($token);
 
         if (! $operator instanceof FilterOperator) {
-            throw InvalidFilterValue::invalidOperator($token);
+            return [FilterOperator::Equal, $value];
         }
 
         return [$operator, $operand];
