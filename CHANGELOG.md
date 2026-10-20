@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.2.0 - 2026-10-20
+
+### What's Changed
+
+* Skip fully ignored nullable filters and fall back to equality for unknown dynamic operator tokens by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/20
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.1.0...1.2.0
+
 ## 1.1.0 - 2026-10-14
 
 ### What's Changed
