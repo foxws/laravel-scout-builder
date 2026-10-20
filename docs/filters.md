@@ -104,7 +104,10 @@ ScoutBuilder::for(Post::class, $request)
     ->allowedFilters(AllowedFilter::dynamicOperator('price'));
 ```
 
-An unrecognised token (e.g. `between:10,20`) throws `InvalidFilterValue`.
+A string whose part before the colon isn't a known token is compared with
+`=` as a whole, so values such as `https://example.com` or `10:30` work
+without the array payload. An unrecognised operator in the array payload
+throws `InvalidFilterValue`.
 
 ## Scope
 
@@ -172,7 +175,7 @@ You can chain these onto any `AllowedFilter` to fine-tune its behaviour:
 |---|---|
 | `->default(...)` | Value used when the filter is missing from the request |
 | `->nullable()` | Allow `null` through (skipped by default) |
-| `->ignore(...)` | Silently skip specific values |
+| `->ignore(...)` | Remove specific values; the filter is skipped when nothing is left |
 | `->delimiter(...)` | Change the multi-value separator (default `,`) |
 
 ```php
