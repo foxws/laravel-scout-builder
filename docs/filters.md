@@ -20,6 +20,9 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?filter[status]=published`
 
+A value containing a nested array, like `?filter[status][0][x]=1`, is ignored
+and no constraint is added.
+
 ## In
 
 Matches any value from a comma-separated list, using Scout's `whereIn()`.
@@ -42,6 +45,10 @@ ScoutBuilder::for(Post::class, $request)
 ```
 
 Request: `?filter[tags]=spam,draft`
+
+`in` and `notIn` ignore nested arrays in their values while keeping valid
+siblings: `?filter[tags][0][x]=1&filter[tags][1]=php` filters on `php`. When no
+usable values remain, no constraint is added.
 
 ## Trashed
 

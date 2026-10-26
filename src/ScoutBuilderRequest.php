@@ -31,7 +31,9 @@ class ScoutBuilderRequest extends Request
         return $this->cachedSearch ??= (function (): string {
             $queryParameterName = (string) Config::get('scout-builder.parameters.query', 'query');
 
-            return trim((string) $this->getRequestData($queryParameterName, ''));
+            $search = $this->getRequestData($queryParameterName, '');
+
+            return is_string($search) ? trim($search) : '';
         })();
     }
 

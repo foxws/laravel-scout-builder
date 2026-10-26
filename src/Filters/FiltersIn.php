@@ -16,6 +16,12 @@ class FiltersIn implements Filter
     {
         $values = is_array($value) ? $value : [$value];
 
+        $values = array_values(array_filter($values, fn (mixed $item): bool => is_scalar($item) || $item === null));
+
+        if ($values === []) {
+            return;
+        }
+
         $query->whereIn($property, $values);
     }
 }
