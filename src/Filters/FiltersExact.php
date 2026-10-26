@@ -14,6 +14,10 @@ class FiltersExact implements Filter
      */
     public function __invoke(Builder $query, mixed $value, string $property): void
     {
+        if (is_array($value) && array_filter($value, is_array(...)) !== []) {
+            return;
+        }
+
         $query->where($property, $value);
     }
 }

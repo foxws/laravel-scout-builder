@@ -593,3 +593,49 @@ it('removes ignored values from nested and associative array values', function (
         'published_between' => ['start' => '2026-01-01'],
     ]);
 });
+
+it('ignores a nested array in the query parameter', function () {
+    $request = ScoutBuilderRequest::fromRequest(Request::create('/', 'GET', [
+        'query' => ['nested' => 'value'],
+    ]));
+
+    expect($request->search())->toBe('');
+});
+
+it('ignores nested arrays in in and not in filter values while keeping valid siblings', function (string $filter, string $method) {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => [['nested' => 'value'], 'news', 'guides'],
+        ],
+    ]))->allowedFilters(AllowedFilter::$method('category'));
+
+    expect($queryBuilder->getScoutBuilder()->$filter)
+        ->toBe(['category' => ['news', 'guides']]);
+})->with([
+    'in' => ['whereIns', 'in'],
+    'not in' => ['whereNotIns', 'notIn'],
+]);
+
+it('skips in and not in filters when only nested arrays remain', function (string $method) {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => [['nested' => 'value']],
+        ],
+    ]))->allowedFilters(AllowedFilter::$method('category'));
+
+    expect($queryBuilder->getScoutBuilder()->whereIns)->toBe([])
+        ->and($queryBuilder->getScoutBuilder()->whereNotIns)->toBe([]);
+})->with(['in', 'notIn']);
+
+it('skips an exact filter when its value contains a nested array', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'category' => [['nested' => 'value'], 'news'],
+        ],
+    ]))->allowedFilters(AllowedFilter::exact('category'));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([]);
+});
