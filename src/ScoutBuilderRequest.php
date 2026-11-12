@@ -158,16 +158,33 @@ class ScoutBuilderRequest extends Request
         return $value;
     }
 
+    /**
+     * The requested page size, limited to the configured maximum, or the
+     * configured default when none (or an invalid one) is requested.
+     */
     public function pageSize(): int
     {
-        $paginationParameter = (string) Config::get('scout-builder.pagination.pagination_parameter', 'page');
-        $sizeParameter = (string) Config::get('scout-builder.pagination.size_parameter', 'size');
         $defaultSize = (int) Config::get('scout-builder.pagination.default_size', 30);
         $maxSize = (int) Config::get('scout-builder.pagination.max_size', 30);
 
-        $size = (int) $this->input("{$paginationParameter}.{$sizeParameter}", $defaultSize);
+        return max(1, min($this->requestedPageSize() ?? $defaultSize, $maxSize));
+    }
 
-        return min($size, $maxSize);
+    /**
+     * The page size in the request, or null when none or an invalid one is given.
+     */
+    public function requestedPageSize(): ?int
+    {
+        $paginationParameter = (string) Config::get('scout-builder.pagination.pagination_parameter', 'page');
+        $sizeParameter = (string) Config::get('scout-builder.pagination.size_parameter', 'size');
+
+        $size = $this->input("{$paginationParameter}.{$sizeParameter}");
+
+        if (! is_numeric($size) || (int) $size < 1) {
+            return null;
+        }
+
+        return (int) $size;
     }
 
     public function pageNumber(): int
