@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.2.2 - 2026-11-12
+
+### What's Changed
+
+* Respect the maxResults and defaultSize given to jsonPaginate() by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/22
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.2.1...1.2.2
+
 ## 1.2.1 - 2026-10-26
 
 ### What's Changed
