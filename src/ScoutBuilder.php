@@ -153,7 +153,7 @@ class ScoutBuilder
         $maxResults ??= (int) Config::get('scout-builder.pagination.max_size', 30);
         $defaultSize ??= (int) Config::get('scout-builder.pagination.default_size', 30);
 
-        return min($this->request->pageSize() ?: $defaultSize, $maxResults);
+        return max(1, min($this->request->requestedPageSize() ?? $defaultSize, $maxResults));
     }
 
     protected function getPaginationPageName(): string
