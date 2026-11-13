@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 1.2.3 - 2026-11-13
+
+### What's Changed
+
+* Keep true and false filter values unless they are ignored themselves by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/23
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.2.2...1.2.3
+
 ## 1.2.2 - 2026-11-12
 
 ### What's Changed
