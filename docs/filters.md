@@ -192,3 +192,8 @@ AllowedFilter::exact('status')
     ->ignore('draft', 'spam') // silently skip these values
     ->delimiter('|')          // override the multi-value delimiter (default: ,)
 ```
+
+The filter values `true` and `false` are only ignored by `ignore(true)`/`ignore('true')`
+or `ignore(false)`/`ignore('false')`, so ignoring `null` or `''` on a boolean filter
+does not drop `filter[active]=false`. This also applies to booleans in arrays and
+defaults. Other values still compare loosely, so `ignore(6)` also ignores `'6'`.

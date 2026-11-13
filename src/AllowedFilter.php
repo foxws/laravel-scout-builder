@@ -206,7 +206,7 @@ class AllowedFilter
     protected function resolveValueForFiltering(mixed $value): mixed
     {
         if (! is_array($value)) {
-            return ! $this->ignored->contains($value) ? $value : null;
+            return ! $this->isIgnored($value) ? $value : null;
         }
 
         $remainingProperties = [];
@@ -222,7 +222,7 @@ class AllowedFilter
                 continue;
             }
 
-            if (! $this->ignored->contains($item)) {
+            if (! $this->isIgnored($item)) {
                 $remainingProperties[$key] = $item;
             }
         }
@@ -236,10 +236,20 @@ class AllowedFilter
             : $remainingProperties;
     }
 
+    protected function isIgnored(mixed $value): bool
+    {
+        if (! is_bool($value)) {
+            return $this->ignored->contains($value);
+        }
+
+        return $this->ignored->containsStrict($value)
+            || $this->ignored->containsStrict($value ? 'true' : 'false');
+    }
+
     protected function containsOnlyIgnoredValues(mixed $value): bool
     {
         if (! is_array($value)) {
-            return $this->ignored->contains($value);
+            return $this->isIgnored($value);
         }
 
         foreach ($value as $item) {

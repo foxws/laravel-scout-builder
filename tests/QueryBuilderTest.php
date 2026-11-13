@@ -558,6 +558,55 @@ it('skips a nullable filter when null is ignored', function () {
     expect($queryBuilder->getScoutBuilder()->wheres)->toBe([]);
 });
 
+it('keeps true and false filter values when unrelated values are ignored', function (string $filterValue, mixed $ignored, bool $expected) {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => [
+            'is_published' => $filterValue,
+        ],
+    ]))->allowedFilters(AllowedFilter::exact('is_published')->ignore($ignored));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([
+        ['field' => 'is_published', 'operator' => '=', 'value' => $expected],
+    ]);
+})->with([
+    'false with null ignored' => ['false', null, false],
+    'false with an empty string ignored' => ['false', '', false],
+    'true with a string ignored' => ['true', 'draft', true],
+]);
+
+it('matches ignored request and default values without coercing booleans', function (mixed $value, array $ignored, array $expectedValues, bool $useDefault) {
+    $receivedValues = [];
+
+    $filter = AllowedFilter::callback('conditions', function (Builder $query, mixed $value) use (&$receivedValues): void {
+        $receivedValues[] = $value;
+    })->ignore($ignored)->nullable();
+
+    if ($useDefault) {
+        $filter->default($value);
+    }
+
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'query' => 'laravel',
+        'filter' => $useDefault ? [] : ['conditions' => $value],
+    ]))->allowedFilters($filter);
+
+    expect($receivedValues)->toBe($expectedValues);
+})->with([
+    'false survives null and empty string' => [false, [null, ''], [false]],
+    'true survives unrelated strings' => [true, ['any'], [true]],
+    'false survives numeric zero' => [false, [0, '0'], [false]],
+    'true survives numeric one' => [true, [1, '1'], [true]],
+    'false is explicitly ignored' => [false, [false], []],
+    'true is explicitly ignored' => [true, [true], []],
+    'false matches its string' => [false, ['false'], []],
+    'true matches its string' => [true, ['true'], []],
+    'opposite boolean is retained' => [false, [true, 'true'], [false]],
+    'list removes only ignored values' => [[false, null, true, 'any'], [null, 'any'], [[false, true]]],
+    'list of ignored booleans is skipped' => [[false, true], ['false', true], []],
+    'numeric strings still match loosely' => ['6', [6], []],
+])->with(['request' => false, 'default' => true]);
+
 it('keeps null values inside an array value for a nullable filter', function () {
     $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
         'query' => 'laravel',
