@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 2.0.0 - 2026-11-19
+
+This release requires PHP 8.5 or newer and Laravel 13. PHP 8.4 and Laravel 12 are no longer supported, and PHP 8.6 is now tested in CI. Stay on the previous major version if you still run PHP 8.4 or Laravel 12.
+
+### What's Changed
+
+* Drop PHP 8.4 and add PHP 8.6 by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/24
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/1.2.3...2.0.0
+
 ## 1.2.3 - 2026-11-13
 
 ### What's Changed
