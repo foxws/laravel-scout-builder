@@ -5,7 +5,7 @@ metadata:
   group: search
   eyebrow: "Laravel Scout · Query Builder · API Filters"
   desc: "Build safe Laravel Scout search queries straight from API requests."
-  requires: "PHP ^8.4"
+  requires: "PHP ^8.5"
   laravel: "12.x / 13.x"
   licence: MIT
 ---
