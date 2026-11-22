@@ -25,6 +25,9 @@ $request->validate([
 ]);
 ```
 
+The same rules fit in a `FormRequest`. For a rule that belongs to a reusable
+filter, you can also [validate in a custom filter](#validating-in-a-custom-filter).
+
 ## Exact
 
 Matches a field exactly, using Scout's `where()`.
@@ -200,6 +203,47 @@ class FiltersPopular implements Filter
 ScoutBuilder::for(Post::class, $request)
     ->allowedFilters(AllowedFilter::custom('popular', new FiltersPopular));
 ```
+
+### Validating in a custom filter
+
+A custom filter can validate its own value, so the rule applies wherever you use
+the filter. An invalid value gives the usual `422` response:
+
+```php
+use Foxws\ScoutBuilder\Filters\Filter;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Laravel\Scout\Builder;
+
+class FiltersStatus implements Filter
+{
+    public function __invoke(Builder $query, mixed $value, string $property): void
+    {
+        Validator::make(
+            ['filter' => [$property => $value]],
+            ["filter.{$property}" => ['required', 'string', Rule::in(['draft', 'published'])]],
+        )->validate();
+
+        $query->where($property, $value);
+    }
+}
+
+// In the allowedFilters() call:
+AllowedFilter::custom('status', new FiltersStatus)->nullable();
+```
+
+It gets the value after the builder handled it, which differs from a `FormRequest`:
+
+- **Skipped values aren't validated.** Without `->nullable()`, an empty value and
+  `null` never reach the filter, which also drops its default. Ignored values
+  never reach it either.
+- **Values are cast.** `42` is an integer and `true` a boolean, so use rules like
+  `integer` and `boolean` instead of `string`. `007` has become `7`.
+- **Values are split.** `a,b` is an array, so use `array` with a rule per item for
+  several values, or `->delimiter('')` to keep the string.
+- **Keep `required`.** Laravel skips rules such as `Rule::in()` for an empty value.
+
+Validate in a `FormRequest` when you need the value exactly as it was sent.
 
 ## Modifiers
 

@@ -27,7 +27,7 @@ Use this skill when a Laravel application turns HTTP query parameters into Larav
 
 ### 2. Validate in a FormRequest
 
-Allowing a filter doesn't validate its value. Create a `FormRequest` for each search endpoint (`php artisan make:request SearchPostsRequest`), with a rule for every allowed filter:
+Allowing a filter doesn't validate its value. Create a `FormRequest` for each search endpoint (`php artisan make:request SearchPostsRequest`), with a rule for every allowed filter that doesn't validate itself:
 
 ```php
 use Illuminate\Foundation\Http\FormRequest;
@@ -98,6 +98,34 @@ public function __invoke(SearchPostsRequest $request)
 - `in` only narrows a `whereIn()` that's already on the builder, and `notIn` adds to a `whereNotIn()`. Put scopes such as the user's teams on the builder before `allowedFilters()`. `callback` and `custom` filters that call these methods replace them, as Scout does.
 - Modifiers: `->default()`, `->nullable()`, `->ignore(...)`, `->delimiter()`.
 
+A `custom` filter can validate too, for a rule that belongs to a reusable filter. An invalid value gives a `422`:
+
+```php
+use Foxws\ScoutBuilder\Filters\Filter;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Laravel\Scout\Builder;
+
+class FiltersStatus implements Filter
+{
+    public function __invoke(Builder $query, mixed $value, string $property): void
+    {
+        Validator::make(
+            ['filter' => [$property => $value]],
+            ["filter.{$property}" => ['required', 'string', Rule::in(['draft', 'published'])]],
+        )->validate();
+
+        $query->where($property, $value);
+    }
+}
+
+// In the allowedFilters() call:
+AllowedFilter::custom('status', new FiltersStatus)->nullable();
+```
+
+- Add `->nullable()` and `required`: otherwise an empty value or `null` skips the filter or its rules, and drops its default.
+- The value is already cast and split: use `integer` for `42`, `boolean` for `true`, and `array` for `a,b`. Ignored values never reach the filter. Validate in the `FormRequest` when the exact string matters.
+
 ### 5. Sorts
 
 - `field`, `latest` / `oldest` (public name and column), `callback` and `custom` (implements `Foxws\ScoutBuilder\Sorts\Sort`); plain strings are `field` shorthand.
@@ -113,7 +141,7 @@ public function __invoke(SearchPostsRequest $request)
 
 ## Rules
 
-- Validate every filter value in a `FormRequest`, with `Rule::in()` or a strict pattern: `string` alone lets through engine filter syntax, which Scout can't always quote. An `in` or `notIn` value is validated as the whole comma-separated string.
+- Validate every filter value in a `FormRequest` or its custom filter, with `Rule::in()` or a strict pattern: `string` alone lets through engine filter syntax, which Scout can't always quote. An `in` or `notIn` value is validated as the whole comma-separated string.
 - Validation isn't authorization: constrain the builder to what the user may search, whatever filters are allowed.
 - Includes and `scope` filters run through Scout's `query()` callback, which only the `database` and `collection` drivers call. Algolia, Meilisearch and Typesense silently ignore them, so don't rely on them there.
 - Engine awareness (`scout-builder.engine_awareness`, on when `APP_DEBUG` is true) throws `UnsupportedEngineFeature` when operator filters or field sorts are used on a driver outside `operator_filter_drivers` / `field_sort_drivers`. Use `EngineAwareness::ensureFeatureSupport()` in custom filters or sorts.
