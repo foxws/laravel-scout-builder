@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Foxws\ScoutBuilder\Filters;
 
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
-use Foxws\ScoutBuilder\Support\FilterValue;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 
@@ -27,8 +26,6 @@ class FiltersExact implements Filter
 
             $value = reset($value);
         }
-
-        FilterValue::ensureSafe($query, $value);
 
         $query->where($property, $value);
     }

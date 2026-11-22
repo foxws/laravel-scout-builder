@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Foxws\ScoutBuilder\Filters;
 
 use BackedEnum;
-use Foxws\ScoutBuilder\Support\FilterValue;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 use Stringable;
@@ -23,10 +22,6 @@ class FiltersIn implements Filter
 
         if ($values === []) {
             return;
-        }
-
-        foreach ($values as $item) {
-            FilterValue::ensureSafe($query, $item);
         }
 
         if (array_key_exists($property, $query->whereIns)) {
