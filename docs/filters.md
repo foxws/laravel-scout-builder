@@ -20,6 +20,10 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?filter[status]=published`
 
+It takes a single value: `?filter[status]=draft,published` throws
+`InvalidFilterValue`. Use `in` to accept several, or `->delimiter('')` when the
+values themselves contain commas.
+
 A value containing a nested array, like `?filter[status][0][x]=1`, is ignored
 and no constraint is added.
 
@@ -46,9 +50,18 @@ ScoutBuilder::for(Post::class, $request)
 
 Request: `?filter[tags]=spam,draft`
 
+Both can only narrow a constraint that's already on the builder. After
+`->whereIn('team_id', [1, 2])`, `?filter[team_id]=2,3` searches team 2 only, and
+`notIn` adds to an existing `whereNotIn()`. Callback and custom filters that call
+`whereIn()` or `whereNotIn()` replace the existing constraint, as Scout does.
+
 `in` and `notIn` ignore nested arrays in their values while keeping valid
 siblings: `?filter[tags][0][x]=1&filter[tags][1]=php` filters on `php`. When no
 usable values remain, no constraint is added.
+
+On Typesense, values containing `.{`, `:(` or `:[(` throw `InvalidFilterValue` in
+`exact`, `in`, `notIn` and operator filters, as Scout can't quote them. Check
+the values yourself in callback and custom filters.
 
 ## Trashed
 
@@ -81,6 +94,8 @@ ScoutBuilder::for(Post::class, $request)
 ```
 
 Request: `?filter[rating]=4`
+
+Like `exact`, operator filters take a single value.
 
 `FilterOperator` cases:
 

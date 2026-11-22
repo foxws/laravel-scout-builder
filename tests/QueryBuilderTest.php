@@ -17,6 +17,8 @@ use Foxws\ScoutBuilder\Tests\Fakes\SearchablePost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Builder;
+use Laravel\Scout\EngineManager;
+use Laravel\Scout\Engines\TypesenseEngine;
 
 it('creates a scout builder from a model class and request query', function () {
     $request = Request::create('/', 'GET', [
@@ -688,3 +690,106 @@ it('skips an exact filter when its value contains a nested array', function () {
 
     expect($queryBuilder->getScoutBuilder()->wheres)->toBe([]);
 });
+
+it('rejects more than one value for an exact filter', function (mixed $value) {
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'filter' => ['status' => $value],
+    ]))->allowedFilters(AllowedFilter::exact('status'));
+})->with([
+    'delimited' => ['draft,published'],
+    'list' => [['draft', 'published']],
+    'keyed' => [['first' => 'draft', 'second' => 'published']],
+])->throws(InvalidFilterValue::class);
+
+it('unwraps a single value in a list for an exact filter', function () {
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'filter' => ['status' => ['published']],
+    ]))->allowedFilters(AllowedFilter::exact('status'));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([
+        ['field' => 'status', 'operator' => '=', 'value' => 'published'],
+    ]);
+});
+
+it('rejects an array as the operand of an operator filter', function (string $method, mixed $value) {
+    $filter = $method === 'operator'
+        ? AllowedFilter::operator('price', FilterOperator::Equal)
+        : AllowedFilter::dynamicOperator('price');
+
+    ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'filter' => ['price' => $value],
+    ]))->allowedFilters($filter);
+})->with([
+    'fixed, delimited' => ['operator', '10,20'],
+    'fixed, payload' => ['operator', ['value' => ['10', '20']]],
+    'dynamic, payload' => ['dynamicOperator', ['operator' => 'eq', 'value' => ['10', '20']]],
+])->throws(InvalidFilterValue::class);
+
+it('only narrows an existing where in constraint', function (array $allowed, string $requested, array $expected) {
+    $builder = SearchablePost::search('')->whereIn('team_id', $allowed);
+
+    ScoutBuilder::for($builder, Request::create('/', 'GET', [
+        'filter' => ['team_id' => $requested],
+    ]))->allowedFilters(AllowedFilter::in('team_id'));
+
+    expect($builder->whereIns)->toBe(['team_id' => $expected]);
+})->with([
+    'a value outside the constraint' => [[1, 2], '3', []],
+    'values inside and outside the constraint' => [[1, 2], '2,3', [2]],
+    'numeric strings in the constraint' => [['1', '2'], '2', ['2']],
+    'booleans in the constraint' => [[true], '1', [true]],
+    'enums in the constraint' => [[FilterOperator::Equal], '=', [FilterOperator::Equal]],
+    'an empty constraint' => [[], '3', []],
+    'null outside the constraint' => [[''], 'null,x', []],
+]);
+
+it('keeps an existing where not in constraint', function () {
+    $builder = SearchablePost::search('')->whereNotIn('status', ['draft']);
+
+    ScoutBuilder::for($builder, Request::create('/', 'GET', [
+        'filter' => ['status' => 'archived'],
+    ]))->allowedFilters(AllowedFilter::notIn('status'));
+
+    expect($builder->whereNotIns)->toBe(['status' => ['draft', 'archived']]);
+});
+
+it('rejects Typesense filter syntax in a value', function (string $method, string $value) {
+    useTypesenseEngine();
+
+    ScoutBuilder::for(SearchablePost::search(''), Request::create('/', 'GET', [
+        'filter' => ['status' => $value],
+    ]))->allowedFilters(AllowedFilter::$method('status'));
+})->with(['exact', 'in', 'notIn', 'dynamicOperator'])->with([
+    'object filter' => 'x.{',
+    'geo filter' => 'x:(',
+    'geo filter after spaces' => 'x:  (',
+    'multi-valued geo filter' => 'x: [ (',
+    'geo filter with a backtick' => 'x:`(',
+])->throws(InvalidFilterValue::class);
+
+it('allows Typesense filter syntax on other engines', function () {
+    config()->set('scout.driver', 'collection');
+
+    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
+        'filter' => ['title' => 'Dune: (Part 2)'],
+    ]))->allowedFilters(AllowedFilter::exact('title'));
+
+    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([
+        ['field' => 'title', 'operator' => '=', 'value' => 'Dune: (Part 2)'],
+    ]);
+});
+
+function useTypesenseEngine(): void
+{
+    config()->set('scout.driver', 'typesense');
+
+    // The engine without its client, which isn't installed and isn't needed to build a query.
+    $manager = new EngineManager(app());
+
+    $manager->extend(
+        'typesense',
+        fn () => (new ReflectionClass(TypesenseEngine::class))->newInstanceWithoutConstructor(),
+    );
+
+    app()->instance(EngineManager::class, $manager);
+}
