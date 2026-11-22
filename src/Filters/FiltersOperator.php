@@ -8,6 +8,7 @@ use Foxws\ScoutBuilder\Enums\EngineFeature;
 use Foxws\ScoutBuilder\Enums\FilterOperator;
 use Foxws\ScoutBuilder\Exceptions\InvalidFilterValue;
 use Foxws\ScoutBuilder\Support\EngineAwareness;
+use Foxws\ScoutBuilder\Support\FilterValue;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 
@@ -23,6 +24,12 @@ class FiltersOperator implements Filter
         EngineAwareness::ensureFeatureSupport(EngineFeature::OperatorFilter);
 
         [$operator, $operand] = $this->resolveOperatorAndOperand($value);
+
+        if (is_array($operand)) {
+            throw InvalidFilterValue::multipleValues();
+        }
+
+        FilterValue::ensureSafe($query, $operand);
 
         $query->where($property, $operator->value, $operand);
     }

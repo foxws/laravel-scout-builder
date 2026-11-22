@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Foxws\ScoutBuilder\Filters;
 
+use Foxws\ScoutBuilder\Support\FilterValue;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Builder;
 
@@ -21,6 +22,13 @@ class FiltersNotIn implements Filter
         if ($values === []) {
             return;
         }
+
+        foreach ($values as $item) {
+            FilterValue::ensureSafe($query, $item);
+        }
+
+        // Scout keeps one "where not in" per field, so add to the one that's already there.
+        $values = [...array_values($query->whereNotIns[$property] ?? []), ...$values];
 
         $query->whereNotIn($property, $values);
     }
