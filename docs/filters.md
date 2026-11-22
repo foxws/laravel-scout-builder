@@ -9,6 +9,22 @@ Filters come from the `filter` parameter on the request. You have to
 explicitly allow each filter you want to accept — any filter name that
 isn't allowed throws an `InvalidFilterQuery` exception.
 
+## Validation
+
+Allowing a filter doesn't validate its value, and search engines such as
+Typesense have filter syntax that Scout can't always quote. Validate the values
+before you search, with `Rule::in()` or a strict pattern rather than `string`
+alone. The value of an `in` or `notIn` filter is the whole comma-separated string:
+
+```php
+use Illuminate\Validation\Rule;
+
+$request->validate([
+    'filter.status' => ['string', Rule::in(['draft', 'published'])],
+    'filter.tags' => ['string', 'regex:/^[a-z0-9,-]+$/'],
+]);
+```
+
 ## Exact
 
 Matches a field exactly, using Scout's `where()`.
@@ -58,10 +74,6 @@ Both can only narrow a constraint that's already on the builder. After
 `in` and `notIn` ignore nested arrays in their values while keeping valid
 siblings: `?filter[tags][0][x]=1&filter[tags][1]=php` filters on `php`. When no
 usable values remain, no constraint is added.
-
-On Typesense, values containing `.{`, `:(` or `:[(` throw `InvalidFilterValue` in
-`exact`, `in`, `notIn` and operator filters, as Scout can't quote them. Check
-the values yourself in callback and custom filters.
 
 ## Trashed
 

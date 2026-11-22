@@ -17,8 +17,6 @@ use Foxws\ScoutBuilder\Tests\Fakes\SearchablePost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Builder;
-use Laravel\Scout\EngineManager;
-use Laravel\Scout\Engines\TypesenseEngine;
 
 it('creates a scout builder from a model class and request query', function () {
     $request = Request::create('/', 'GET', [
@@ -752,44 +750,3 @@ it('keeps an existing where not in constraint', function () {
 
     expect($builder->whereNotIns)->toBe(['status' => ['draft', 'archived']]);
 });
-
-it('rejects Typesense filter syntax in a value', function (string $method, string $value) {
-    useTypesenseEngine();
-
-    ScoutBuilder::for(SearchablePost::search(''), Request::create('/', 'GET', [
-        'filter' => ['status' => $value],
-    ]))->allowedFilters(AllowedFilter::$method('status'));
-})->with(['exact', 'in', 'notIn', 'dynamicOperator'])->with([
-    'object filter' => 'x.{',
-    'geo filter' => 'x:(',
-    'geo filter after spaces' => 'x:  (',
-    'multi-valued geo filter' => 'x: [ (',
-    'geo filter with a backtick' => 'x:`(',
-])->throws(InvalidFilterValue::class);
-
-it('allows Typesense filter syntax on other engines', function () {
-    config()->set('scout.driver', 'collection');
-
-    $queryBuilder = ScoutBuilder::for(SearchablePost::class, Request::create('/', 'GET', [
-        'filter' => ['title' => 'Dune: (Part 2)'],
-    ]))->allowedFilters(AllowedFilter::exact('title'));
-
-    expect($queryBuilder->getScoutBuilder()->wheres)->toBe([
-        ['field' => 'title', 'operator' => '=', 'value' => 'Dune: (Part 2)'],
-    ]);
-});
-
-function useTypesenseEngine(): void
-{
-    config()->set('scout.driver', 'typesense');
-
-    // The engine without its client, which isn't installed and isn't needed to build a query.
-    $manager = new EngineManager(app());
-
-    $manager->extend(
-        'typesense',
-        fn () => (new ReflectionClass(TypesenseEngine::class))->newInstanceWithoutConstructor(),
-    );
-
-    app()->instance(EngineManager::class, $manager);
-}
