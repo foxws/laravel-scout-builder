@@ -2,6 +2,22 @@
 
 All notable changes to `laravel-scout-builder` will be documented in this file.
 
+## 2.1.0 - 2026-11-23
+
+This release requires Laravel Scout 11.10 or newer.
+
+- `exact` and operator filters take a single value: `?filter[status]=draft,published` on an `exact` filter now throws `InvalidFilterValue`. Use an `in` filter to accept several values. A single value in a list still works.
+- `in` only narrows a `whereIn` that's already on the builder, and `notIn` adds to a `whereNotIn`, instead of replacing them.
+- The docs and the Boost skill show how to validate filter values in your app, with `Rule::in()` or a strict pattern, including in custom filters.
+
+### What's Changed
+
+* Harden the workflows and merge dependency updates by hand by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/25
+* Validate filter values and keep existing constraints by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/26
+* Leave validating filter values to the app by @francoism90 in https://github.com/foxws/laravel-scout-builder/pull/27
+
+**Full Changelog**: https://github.com/foxws/laravel-scout-builder/compare/2.0.0...2.1.0
+
 ## 2.0.0 - 2026-11-19
 
 This release requires PHP 8.5 or newer and Laravel 13. PHP 8.4 and Laravel 12 are no longer supported, and PHP 8.6 is now tested in CI. Stay on the previous major version if you still run PHP 8.4 or Laravel 12.
